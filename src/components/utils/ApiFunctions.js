@@ -27,3 +27,34 @@ export async function registerUser(registration) {
 	} 
 }
 
+/* This is function to login */
+export async function loginUser (login) {
+	try {
+		const response = await api.post("auth/login", login)
+		if(response.status >= 200 && response.status < 300) {
+			return response.data
+		} else {
+			return null
+		}
+	} catch (error) {
+		console.error(error)
+		return null
+	}
+}
+
+/* This function adds a new room room to the database */
+export async function addRoom(photo, roomType, roomPrice) {
+	const formData = new FormData()
+	formData.append("photo", photo)
+	formData.append("roomType", roomType)
+	formData.append("roomPrice", roomPrice)
+
+	const response = await api.post("/rooms/add/new-room", formData, {
+		headers : getHeader() // add Header to Authorize
+	})
+	if (response.status === 201) {
+		return true
+	} else {
+		return false
+	}
+}
