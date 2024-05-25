@@ -114,3 +114,13 @@ export async function getRoomById(roomId) {
 		throw new Error(`Error fetching room ${error.message}`)
 	}
 }
+
+/* This function gets all bookings from the database */
+export async function getAllBookings() {
+	try {
+		const result = await api.get("/bookings/all-bookings")
+		return result.data
+	} catch (error) {
+		throw new Error(`Error fetching booknigs : ${error.message}`)
+	}
+}
