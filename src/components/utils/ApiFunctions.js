@@ -183,3 +183,15 @@ export async function cancelBooking(bookingId) {
 		throw new Error(`Error cancelling booking : ${error.message}`)
 	}
 }
+
+/* This function delete user */ 
+export async function deleteUser(userId) {
+	try {
+		const response = await api.delete(`/users/delete/${userId}`, {
+			headers : getHeader() // add Header to Authorize
+		})
+		return response.data
+	} catch (error) {
+		return error.message
+	}
+}
