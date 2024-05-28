@@ -127,7 +127,7 @@ export async function getAllBookings() {
 		const result = await api.get("/bookings/all-bookings")
 		return result.data
 	} catch (error) {
-		throw new Error(`Error fetching booknigs : ${error.message}`)
+		throw new Error(`Error fetching booking : ${error.message}`)
 	}
 }
 
@@ -143,4 +143,17 @@ export async function bookRoom(roomId, booking) {
 			throw new Error(`Error booking room : ${error.message}`)
 		}
 	}
-}	
+}
+
+/* This is the function to get user bookings by the user id */
+export async function getBookingsByEmail(email, token) {
+	try {
+		const response = await api.get(`/bookings/user/${email}/bookings`, {
+			headers: getHeader() // add Header to Authorize
+		})
+		return response.data
+	} catch (error) {
+		console.error("Error fetching bookings:", error.message)
+		throw new Error("Failed to fetch booking")
+	}
+}
