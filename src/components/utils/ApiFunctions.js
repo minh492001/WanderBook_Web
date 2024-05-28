@@ -157,3 +157,15 @@ export async function getBookingsByEmail(email, token) {
 		throw new Error("Failed to fetch booking")
 	}
 }
+
+/* This function cancels booking */
+export async function cancelBooking(bookingId) {
+	try {
+		const result = await api.delete(`/bookings/booking/${bookingId}/delete`, {
+			headers : getHeader() // add Header to Authorize
+		})
+		return result.data
+	} catch (error) {
+		throw new Error(`Error cancelling booking : ${error.message}`)
+	}
+}
