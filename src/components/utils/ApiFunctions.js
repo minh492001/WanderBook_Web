@@ -130,3 +130,17 @@ export async function getAllBookings() {
 		throw new Error(`Error fetching booknigs : ${error.message}`)
 	}
 }
+
+/* This function saves a new booking to the database */
+export async function bookRoom(roomId, booking) {
+	try{
+		const response = await api.post(`/bookings/room/${roomId}/booking`, booking)
+		return response.data
+	} catch (error) {
+		if(error.response && error.response.data) {
+			throw new Error(error.response.data)
+		} else {
+			throw new Error(`Error booking room : ${error.message}`)
+		}
+	}
+}	
