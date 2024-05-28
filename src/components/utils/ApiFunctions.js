@@ -160,7 +160,7 @@ export async function bookRoom(roomId, booking) {
 }
 
 /* This is the function to get user bookings by the user id */
-export async function getBookingsByEmail(email, token) {
+export async function getBookingsByEmail(email) {
 	try {
 		const response = await api.get(`/bookings/user/${email}/bookings`, {
 			headers: getHeader() // add Header to Authorize
@@ -193,5 +193,17 @@ export async function deleteUser(userId) {
 		return response.data
 	} catch (error) {
 		return error.message
+	}
+}
+
+/* This function gets a single user */
+export async function getUser(email) {
+	try {
+		const response = await api.get(`/users/${email}`, {
+			headers : getHeader() // add Header to Authorize
+		})
+		return response.data
+	} catch (error) {
+		throw error
 	}
 }
