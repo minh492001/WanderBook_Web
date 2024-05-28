@@ -131,6 +131,20 @@ export async function getAllBookings() {
 	}
 }
 
+/* This function get booking by the confirmation code */
+export async function getBookingByConfirmationCode(confirmationCode) {
+	try{
+		const result = await api.get(`/bookings/confirmation/${confirmationCode}`)
+		return result.data
+	} catch (error) {
+		if(error.response && error.response.data) {
+			throw new Error(error.response.data)
+		}else {
+			throw new Error(`Error find booking : ${error.message}`)
+		}
+	}
+}
+
 /* This function saves a new booking to the database */
 export async function bookRoom(roomId, booking) {
 	try{
