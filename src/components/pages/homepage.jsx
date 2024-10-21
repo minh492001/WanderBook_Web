@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Calendar, Users } from 'lucide-react'
 import Navbar from './navbar'
-import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight } from 'lucide-react'
 import Footer from './footer'
 
 const HomePage = () => {
@@ -47,7 +48,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       <header className="relative h-screen flex items-center justify-center overflow-hidden">
         {images.map((img, index) => (
@@ -65,18 +66,18 @@ const HomePage = () => {
         ))}
         <div className="absolute inset-0 bg-black opacity-50" />
         <div className="relative z-10 text-center text-white">
-          <h1 className="text-5xl font-extrabold mb-4 animate-fade-in-down">
+          <h1 className="text-6xl font-extrabold mb-4 animate-fade-in-down">
             Welcome to Luxury Stays
           </h1>
-          <p className="text-xl mb-8 animate-fade-in-up">
+          <p className="text-2xl mb-8 animate-fade-in-up">
             Experience unparalleled comfort and elegance
           </p>
-          <a
-            href="#booking"
+          <Link
+            to="/booking"
             className="bg-blue-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-700 transition-all duration-300 animate-pulse hover:animate-none"
           >
             Book Now
-          </a>
+          </Link>
         </div>
         <button
           onClick={prevImage}
@@ -116,42 +117,57 @@ const HomePage = () => {
               </div>
               <div>
                 <label htmlFor="check-in" className="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
-                <input
-                  type="date"
-                  name="check-in"
-                  id="check-in"
-                  className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="date"
+                    name="check-in"
+                    id="check-in"
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="check-out" className="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
-                <input
-                  type="date"
-                  name="check-out"
-                  id="check-out"
-                  className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="date"
+                    name="check-out"
+                    id="check-out"
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
-                <select
-                  id="guests"
-                  name="guests"
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option>1 Guest</option>
-                  <option>2 Guests</option>
-                  <option>3 Guests</option>
-                  <option>4+ Guests</option>
-                </select>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Users className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select
+                    id="guests"
+                    name="guests"
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-10 py-2 text-base border-gray-300 sm:text-sm rounded-md"
+                  >
+                    <option>1 Guest</option>
+                    <option>2 Guests</option>
+                    <option>3 Guests</option>
+                    <option>4+ Guests</option>
+                  </select>
+                </div>
               </div>
               <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                <button
-                  type="submit"
+                <Link
+                  to="/booking"
                   className="w-full bg-blue-600 border border-transparent rounded-md py-3 px-4 flex items-center justify-center text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-lg"
                 >
                   Search
-                </button>
+                </Link>
               </div>
             </form>
           </div>
@@ -169,9 +185,9 @@ const HomePage = () => {
                 <div className="relative">
                   <img className="h-48 w-full object-cover" src={room.image} alt={room.name} />
                   <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                    <a href="#" className="text-white text-lg font-semibold bg-blue-600 px-4 py-2 rounded-full hover:bg-blue-700 transition-colors duration-300">
+                    <Link to="/booking" className="text-white text-lg font-semibold bg-blue-600 px-4 py-2 rounded-full hover:bg-blue-700 transition-colors duration-300">
                       View Details
-                    </a>
+                    </Link>
                   </div>
                 </div>
                 <div className="p-6">
@@ -211,17 +227,17 @@ const HomePage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Experience Luxury Like Never Before</h2>
             <p className="text-xl mb-8">Book your stay now and indulge in unparalleled comfort and service.</p>
-            <a
-              href="#booking"
+            <Link
+              to="/booking"
               className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:shadow-lg inline-block"
             >
               Reserve Your Room
-            </a>
+            </Link>
           </div>
         </section>
       </main>
 
-     <Footer />
+      <Footer />
     </div>
   )
 }
