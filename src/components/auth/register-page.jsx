@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Key, Eye, EyeOff, Loader2, User, Phone, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +14,7 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   useEffect(() => {
@@ -35,10 +38,26 @@ const RegisterPage = () => {
       return;
     }
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    console.log('Registering', { email, password, fullName, phoneNumber, birthday });
+    // try{
+    //   // Simulate API call
+    //   const response = await axios.post('http://localhost:3000/auth/register', {
+    //     email,
+    //     password,
+    //     fullName,
+    //     phoneNumber,
+    //     birthday,
+    //   });
+
+    //   // Xử lý phản hồi thành công
+    //   alert('Registration successful! You can now log in.'); // Thông báo thành công
+    //   navigate('/login'); // Điều hướng đến trang đăng nhập
+    // } catch (error) {
+    // // Xử lý lỗi
+    //   console.error('Registration failed:', error);
+    //   alert('Registration failed. Please try again.'); // Thông báo lỗi
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const getPasswordStrengthColor = () => {
