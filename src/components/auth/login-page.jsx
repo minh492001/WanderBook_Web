@@ -1,20 +1,52 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Key, Eye, EyeOff, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const navigate = useNavigate();
+
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    console.log('Logging in', { email, password });
+
+    // try {
+    //   const response = await axios.post('http://localhost:3000/auth/login', {
+    //     email,
+    //     password,
+    //   });
+
+    //   if (response.data.success) {
+    //     showNotification(response.data.message, 'success');
+    //     localStorage.setItem('userName', response.data.user.fullName);
+    //     localStorage.setItem('token', response.data.token);
+    //     setTimeout(() => navigate('/home'), 1500); // Navigate after showing notification
+    //   } else {
+    //     showNotification('Login failed: ' + response.data.message, 'error');
+    //   }
+    //   console.log(response.data);
+
+    //   return response.data;
+    // } catch (error) {
+    //   console.error('Login failed:', error);
+    //   if (error.response) {
+    //     showNotification('Login failed: ' + error.response.data.message, 'error');
+    //   } else {
+    //     showNotification('An error occurred during login. Please try again later.', 'error');
+    //   }
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   return (
@@ -93,6 +125,15 @@ const LoginPage = () => {
           </Link>
         </div>
       </div>
+      {notification.show && (
+        <div
+          className={`fixed bottom-4 right-4 px-6 py-3 rounded-md shadow-lg transition-opacity duration-300 ${
+            notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          } text-white`}
+        >
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }
