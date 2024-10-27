@@ -67,3 +67,43 @@
     font-size: 2rem;
     margin-right: 1rem;
   }
+
+  .ice-cream-section {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  .ice-cream-image {
+    border-radius: 20px 20px 0 0;
+    object-fit: cover;
+    width: 100%;
+    height: 300px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+  .progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #fda085 0%, #f6d365 100%);
+    transition: width 0.5s ease-in-out;
+  }
+  .progress-bar-bg {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  .floating-icon {
+    animation: float 3s ease-in-out infinite;
+  }

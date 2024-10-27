@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Calendar, Users, MapPin, IceCream, Award, UserCheck } from 'lucide-react'
+import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Calendar, Users, MapPin, IceCream, Award, UserCheck, DollarSign } from 'lucide-react'
 import Navbar from './navbar';
 import Footer from './footer';
 import '../style-pages/home-page.css';
@@ -188,95 +188,82 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section id="ice-cream-history" className={`mb-16 transition-all duration-1000 ${isVisible['ice-cream-history'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="md:flex">
-              <div className="md:flex-shrink-0">
-                <img className="h-48 w-full object-cover md:w-48 history-image" 
-                     src="https://ik.imagekit.io/0ofixtqpt/ice-cream-history.jpg?updatedAt=1685544839800"
-                     alt="Vintage ice cream parlor" />
+        <section id="ice-cream-history" className={`max-w-6xl mx-auto px-4 py-16 transition-all duration-1000 ${isVisible['ice-cream-history'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="ice-cream-section">
+          <img 
+            src="https://ik.imagekit.io/0ofixtqpt/ice-cream-history.jpg?updatedAt=1685544839800" 
+            alt="Vintage ice cream parlor" 
+            className="ice-cream-image"
+          />
+          <div className="p-8">
+            <h2 className="text-4xl font-bold text-white mb-4">A Scoop of History: Our Ice Cream Journey</h2>
+            <p className="text-white text-lg mb-8">
+              Since 1950, Luxury Stays has been delighting guests with our signature ice cream. What started as a small parlor in Ha Noi has grown into a beloved tradition across all our locations. Our secret? A perfect blend of premium ingredients and a dash of nostalgia in every scoop.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="stat-card p-6">
+                <IceCream className="h-12 w-12 text-yellow-400 mb-4 floating-icon" />
+                <h3 className="text-2xl font-semibold mb-2">Ice Cream Scoops</h3>
+                <p className="text-4xl font-bold text-yellow-500">{salesData[animationStep].scoops}</p>
+                <p className="text-gray-600">Served in {salesData[animationStep].year}</p>
               </div>
-              <div className="p-8">
-                <div className="uppercase tracking-wide text-sm text-blue-600 font-semibold">Our Sweet Legacy</div>
-                <h2 className="block mt-1 text-3xl leading-tight font-bold text-gray-900">A Scoop of History: Our Ice Cream Journey</h2>
-                <p className="mt-2 text-gray-600">
-                  Since 1950, Luxury Stays has been delighting guests with our signature ice cream. What started as a small parlor in Ha Noi has grown into a beloved tradition across all our locations. Our secret? A perfect blend of premium ingredients and a dash of nostalgia in every scoop.
-                </p>
-                <div className="mt-4 flex items-center">
-                  <IceCream className="h-8 w-8 text-blue-600 mr-2 ice-cream-icon" />
-                  <span className="text-lg font-semibold text-gray-800">70+ Years of Sweet Memories</span>
-                </div>
+              <div className="stat-card p-6">
+                <DollarSign className="h-12 w-12 text-green-400 mb-4 floating-icon" />
+                <h3 className="text-2xl font-semibold mb-2">Annual Revenue</h3>
+                <p className="text-4xl font-bold text-green-500">{salesData[animationStep].revenue}</p>
+                <p className="text-gray-600">Generated in {salesData[animationStep].year}</p>
               </div>
-            </div>
-            <div className="bg-gray-100 px-8 py-4">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-sm font-semibold text-gray-600">Ice Cream Scoops Served</div>
-                <div className="flex space-x-2">
-                  {salesData.map((data, index) => (
-                    <div
-                      key={data.year}
-                      className={`w-3 h-3 rounded-full ${
-                        index === animationStep ? 'bg-blue-600' : 'bg-gray-300'
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-              </div>
-              <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 rounded-full transaction-animation"
-                  style={{ width: `${(animationStep + 1) * 25}%` }}
-                ></div>
-              </div>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-sm font-semibold text-gray-600">{salesData[animationStep].year}</span>
-                <span className="text-sm font-bold text-blue-600">{salesData[animationStep].scoops} Scoops</span>
+              <div className="stat-card p-6">
+                <Users className="h-12 w-12 text-blue-400 mb-4 floating-icon" />
+                <h3 className="text-2xl font-semibold mb-2">Happy Customers</h3>
+                <p className="text-4xl font-bold text-blue-500">{salesData[animationStep].customers.toLocaleString()}</p>
+                <p className="text-gray-600">Served by {salesData[animationStep].year}</p>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section id="company-growth" className={`mb-16 transition-all duration-1000 ${isVisible['company-growth'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden growth-card">
-            <div className="p-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Growth Over the Years</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="growth-metric">
-                  <div className="flex items-center mb-4">
-                    <Award className="text-green-500 growth-icon" />
-                    <h3 className="text-xl font-semibold text-gray-800">Years of Service</h3>
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-2xl font-semibold mb-4">Our Sweet Growth</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Ice Cream Scoops</span>
+                    <span className="font-semibold">{salesData[animationStep].scoops}</span>
                   </div>
-                  <div className="h-2 bg-gray-200 rounded-full progress-bar-bg">
+                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full progress-bar"
-                      style={{ width: `${(salesData[animationStep].years / 73) * 100}%` }}
+                      className="h-full bg-yellow-400 rounded-full transition-all duration-500 ease-in-out"
+                      style={{ width: `${(animationStep + 1) * 25}%` }}
                     ></div>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-600">{salesData[animationStep].year}</span>
-                    <span className="text-sm font-bold text-green-600">{salesData[animationStep].years} Years</span>
                   </div>
                 </div>
-                <div className="growth-metric">
-                  <div className="flex items-center mb-4">
-                    <UserCheck className="text-yellow-500 growth-icon" />
-                    <h3 className="text-xl font-semibold text-gray-800">Satisfied Customers</h3>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Annual Revenue</span>
+                    <span className="font-semibold">{salesData[animationStep].revenue}</span>
                   </div>
-                  <div className="h-2 bg-gray-200 rounded-full  progress-bar-bg">
+                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full progress-bar"
-                      style={{ width: `${(Math.log(salesData[animationStep].customers) / Math.log(1000000)) * 100}%` }}
+                      className="h-full bg-green-400 rounded-full transition-all duration-500 ease-in-out"
+                      style={{ width: `${(animationStep + 1) * 25}%` }}
                     ></div>
                   </div>
-                  <div className="mt-2 flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-600">{salesData[animationStep].year}</span>
-                    <span className="text-sm font-bold text-yellow-600">{salesData[animationStep].customers.toLocaleString()} Customers</span>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Happy Customers</span>
+                    <span className="font-semibold">{salesData[animationStep].customers.toLocaleString()}</span>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-400 rounded-full transition-all duration-500 ease-in-out"
+                      style={{ width: `${(animationStep + 1) * 25}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         <section id="map" className={`mb-16 transition-all duration-1000 ${isVisible.map ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Our Prime Location</h2>

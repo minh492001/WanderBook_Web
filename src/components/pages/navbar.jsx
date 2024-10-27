@@ -11,6 +11,14 @@ const Navbar = () => {
   const [showNotification, setShowNotification] = useState(false)
   const userMenuRef = useRef(null)
 
+  const salesData = [
+    { year: 1950, scoops: '100k', revenue: '$500k', customers: 1000 },
+    { year: 1980, scoops: '500k', revenue: '$2.5M', customers: 10000 },
+    { year: 2000, scoops: '1M', revenue: '$5M', customers: 100000 },
+    { year: 2023, scoops: '5M+', revenue: '$25M+', customers: 1000000 },
+  ]
+
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
