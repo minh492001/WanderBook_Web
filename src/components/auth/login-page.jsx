@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Key, Eye, EyeOff, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { loginUser } from '../utils/ApiFunctions';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -20,33 +20,22 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // try {
-    //   const response = await axios.post('http://localhost:3000/auth/login', {
-    //     email,
-    //     password,
-    //   });
+    try{ 
+      const loginData = { email, password };
 
-    //   if (response.data.success) {
-    //     showNotification(response.data.message, 'success');
-    //     localStorage.setItem('userName', response.data.user.fullName);
-    //     localStorage.setItem('token', response.data.token);
-    //     setTimeout(() => navigate('/home'), 1500); // Navigate after showing notification
-    //   } else {
-    //     showNotification('Login failed: ' + response.data.message, 'error');
-    //   }
-    //   console.log(response.data);
-
-    //   return response.data;
-    // } catch (error) {
-    //   console.error('Login failed:', error);
-    //   if (error.response) {
-    //     showNotification('Login failed: ' + error.response.data.message, 'error');
-    //   } else {
-    //     showNotification('An error occurred during login. Please try again later.', 'error');
-    //   }
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      if(Response.success){
+        showNotification(response.message, 'success');
+        sessionStorage.setItem('Username', response.user.fullName);
+        sessionStorage.setItem('token', response.token);
+        setTimeout(() => navigate('/'), 1500);
+      }else{
+        showNotification('Login Failed: ' + response.message, 'error');
+      }
+    }catch(error){
+      showNotification(error.message || 'An error occurred during login.', 'error');
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   return (

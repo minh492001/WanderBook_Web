@@ -1,115 +1,133 @@
 .booking-container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .booking-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: #1a202c;
-    text-align: center;
-    margin-bottom: 2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  .booking-subtitle {
-    font-size: 1.5rem;
-    color: #4a5568;
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .booking-form {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    padding: 2rem;
-    margin-bottom: 3rem;
-  }
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-  .form-label {
-    display: block;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #4a5568;
-    margin-bottom: 0.5rem;
-  }
-  .form-input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 3rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-    background-color: #f7fafc;
-    transition: all 0.2s ease-in-out;
-  }
-  .form-input:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-  }
-  .form-icon {
-    position: absolute;
-    top: 50%;
-    left: 1rem;
-    transform: translateY(-50%);
-    color: #a0aec0;
-  }
-  .form-submit {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-    background-color: #4299e1;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-  }
-  .form-submit:hover {
-    background-color: #3182ce;
-  }
-  .why-book {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    padding: 2rem;
-  }
-  .why-book-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 1.5rem;
-    text-align: center;
-  }
-  .why-book-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-  }
-  .why-book-item {
-    text-align: center;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    background-color: #f7fafc;
-    transition: all 0.2s ease-in-out;
-  }
-  .why-book-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  .why-book-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-  .why-book-item-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 0.5rem;
-  }
-  .why-book-item-description {
-    font-size: 1rem;
-    color: #4a5568;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.booking-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1a202c;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.booking-subtitle {
+  font-size: 1.5rem;
+  color: #4a5568;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.booking-form {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.form-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #f7fafc;
+  transition: all 0.2s ease-in-out;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+.form-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: #a0aec0;
+}
+.btn-primary {
+  background-color: #4299e1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-primary:hover {
+  background-color: #3182ce;
+}
+.btn-secondary {
+  background-color: #a0aec0;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-secondary:hover {
+  background-color: #718096;
+}
+.room-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+.room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.why-book {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+}
+.why-book-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.why-book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+.why-book-item {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background-color: #f7fafc;
+  transition: all 0.2s ease-in-out;
+}
+.why-book-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.why-book-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.why-book-item-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+.why-book-item-description {
+  font-size: 1rem;
+  color: #4a5568;
+}

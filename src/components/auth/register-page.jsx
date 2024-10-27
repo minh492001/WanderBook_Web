@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Key, Eye, EyeOff, Loader2, User, Phone, Calendar } from 'lucide-react';
+import { Mail, Key, Eye, EyeOff, Loader2, User, Phone, Calendar, MapPinHouse } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { registerUser } from '../utils/ApiFunctions';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [address, setAddress] = useState('');
   const [birthday, setBirthday] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [passwordStrength, setPasswordStrength] = useState(0);
-
+  
   useEffect(() => {
     let strength = 0;
     if (password.length > 6) strength++;
@@ -29,35 +30,40 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Kiểm tra tên hợp lệ
     if (!fullName.match(/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/)) {
       alert("Please enter a valid full name (first and last name, letters only)");
       return;
     }
+
+     // Kiểm tra mật khẩu trùng khớp
     if (password !== confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
-    setIsLoading(true);
-    // try{
-    //   // Simulate API call
-    //   const response = await axios.post('http://localhost:3000/auth/register', {
-    //     email,
-    //     password,
-    //     fullName,
-    //     phoneNumber,
-    //     birthday,
-    //   });
 
-    //   // Xử lý phản hồi thành công
-    //   alert('Registration successful! You can now log in.'); // Thông báo thành công
-    //   navigate('/login'); // Điều hướng đến trang đăng nhập
-    // } catch (error) {
-    // // Xử lý lỗi
-    //   console.error('Registration failed:', error);
-    //   alert('Registration failed. Please try again.'); // Thông báo lỗi
-    // } finally {
-    //   setIsLoading(false);
-    // }
+     // Xác nhận yêu cầu đăng ký
+    setIsLoading(true);
+    const registrationData = {
+      email,
+      password,
+      fullName,
+      phoneNumber,
+      birthday,
+      address,
+    };
+  
+    try {
+      const response = await registerUser(registrationData);
+      alert('Registration successful! You can now log in.'); 
+      navigate('/login'); 
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getPasswordStrengthColor = () => {
@@ -129,6 +135,26 @@ const RegisterPage = () => {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+1 (123) 456-7890"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+              Address
+            </label>
+            <div className="relative rounded-md shadow-sm">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MapPinHouse className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                required
+                className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base py-3"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="221B Baker Street"
               />
             </div>
           </div>

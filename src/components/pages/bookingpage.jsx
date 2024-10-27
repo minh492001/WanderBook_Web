@@ -1,22 +1,246 @@
 import React, { useState } from 'react'
+import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Calendar, Users, CreditCard, ChevronRight, Bed, Moon, Hash, Key, Shield, Clock, Gift } from 'lucide-react'
+import '../style-pages/booking-page.css'
 
 const BookingPage = () => {
-  const [checkInDate, setCheckInDate] = useState('')
-  const [checkOutDate, setCheckOutDate] = useState('')
-  const [adults, setAdults] = useState(1)
-  const [children, setChildren] = useState(0)
-  const [roomType, setRoomType] = useState('')
-  const [confirmationCode, setConfirmationCode] = useState('')
-  const [roomId, setRoomId] = useState('')
+  const [step, setStep] = useState(1)
+  const [bookingData, setBookingData] = useState({
+    checkInDate: '',
+    checkOutDate: '',
+    adults: 1,
+    children: 0,
+    branch: '',
+    roomType: '',
+    selectedRoom: null,
+  })
 
-  const totalGuests = adults + children
+  const branches = ['Ha Noi', 'Ho Chi Minh City', 'Da Nang', 'Nha Trang']
+  const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Penthouse']
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Handle form submission
-    console.log('Booking submitted:', { checkInDate, checkOutDate, adults, children, roomType, confirmationCode, roomId })
+  const totalGuests = bookingData.adults + bookingData.children
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setBookingData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleNextStep = () => {
+    setStep((prevStep) => prevStep + 1)
+  }
+
+  const handlePrevStep = () => {
+    setStep((prevStep) => prevStep - 1)
+  }
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">Select Dates</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label htmlFor="checkInDate" className="form-label">Check-in Date</label>
+                <div className="relative">
+                  <Calendar className="form-icon" />
+                  <input
+                    type="date"
+                    id="checkInDate"
+                    name="checkInDate"
+                    className="form-input"
+                    value={bookingData.checkInDate}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="checkOutDate" className="form-label">Check-out Date</label>
+                <div className="relative">
+                  <Calendar className="form-icon" />
+                  <input
+                    type="date"
+                    id="checkOutDate"
+                    name="checkOutDate"
+                    className="form-input"
+                    value={bookingData.checkOutDate}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )
+      case 2:
+        return (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">Number of Guests</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="form-group">
+                <label htmlFor="adults" className="form-label">Adults</label>
+                <div className="relative">
+                  <Users className="form-icon" />
+                  <input
+                    type="number"
+                    id="adults"
+                    name="adults"
+                    className="form-input"
+                    value={bookingData.adults}
+                    onChange={handleInputChange}
+                    min="1"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="children" className="form-label">Children</label>
+                <div className="relative">
+                  <Users className="form-icon" />
+                  <input
+                    type="number"
+                    id="children"
+                    name="children"
+                    className="form-input"
+                    value={bookingData.children}
+                    onChange={handleInputChange}
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="totalGuests" className="form-label">Total Guests</label>
+                <div className="relative">
+                  <Users className="form-icon" />
+                  <input
+                    type="number"
+                    id="totalGuests"
+                    className="form-input bg-gray-100"
+                    value={totalGuests}
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )
+      case 3:
+        return (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">Select Branch and Room Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label htmlFor="branch" className="form-label">Branch</label>
+                <div className="relative">
+                  <MapPin className="form-icon" />
+                  <select
+                    id="branch"
+                    name="branch"
+                    className="form-input"
+                    value={bookingData.branch}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select a branch</option>
+                    {branches.map((branch) => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="roomType" className="form-label">Room Type</label>
+                <div className="relative">
+                  <Bed className="form-icon" />
+                  <select
+                    id="roomType"
+                    name="roomType"
+                    className="form-input"
+                    value={bookingData.roomType}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select a room type</option>
+                    {roomTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </>
+        )
+      case 4:
+        return (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">Available Rooms</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {roomTypes.map((type) => (
+                <div key={type} className="room-card">
+                  <img src="/placeholder.svg?height=200&width=300" alt={`${type} Room`} className="w-full h-48 object-cover rounded-t-lg" />
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold mb-2">{type} Room</h3>
+                    <p className="text-gray-600 mb-4">Luxurious {type.toLowerCase()} room with all amenities</p>
+                    <button
+                      onClick={() => {
+                        setBookingData((prev) => ({ ...prev, selectedRoom: type }))
+                        handleNextStep()
+                      }}
+                      className="btn-primary w-full"
+                    >
+                      Select Room
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )
+      case 5:
+        return (
+          <>
+            <h2 className="text-2xl font-semibold mb-4">Payment</h2>
+            <div className="form-group">
+              <label htmlFor="cardNumber" className="form-label">Card Number</label>
+              <div className="relative">
+                <CreditCard className="form-icon" />
+                <input
+                  type="text"
+                  id="cardNumber"
+                  className="form-input"
+                  placeholder="1234 5678 9012 3456"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="form-group">
+                <label htmlFor="expiryDate" className="form-label">Expiry Date</label>
+                <input
+                  type="text"
+                  id="expiryDate"
+                  className="form-input"
+                  placeholder="MM/YY"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="cvv" className="form-label">CVV</label>
+                <input
+                  type="text"
+                  id="cvv"
+                  className="form-input"
+                  placeholder="123"
+                  required
+                />
+              </div>
+            </div>
+          </>
+        )
+      default:
+        return null
+    }
   }
 
   return (
@@ -29,179 +253,27 @@ const BookingPage = () => {
           Experience unparalleled comfort and elegance. Reserve your room now.
         </p>
 
-        <form onSubmit={handleSubmit} className="booking-form">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="form-group">
-              <label htmlFor="checkInDate" className="form-label">
-                Check-in Date
-              </label>
-              <div className="relative">
-                <Calendar className="form-icon" />
-                <input
-                  type="date"
-                  id="checkInDate"
-                  className="form-input"
-                  value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="checkOutDate" className="form-label">
-                Check-out Date
-              </label>
-              <div className="relative">
-                <Calendar className="form-icon" />
-                <input
-                  type="date"
-                  id="checkOutDate"
-                  className="form-input"
-                  value={checkOutDate}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+        <form onSubmit={(e) => e.preventDefault()} className="booking-form">
+          {renderStep()}
+          <div className="flex justify-between mt-8">
+            {step > 1 && 
+              <button onClick={handlePrevStep} className="btn-secondary">
+                <ChevronLeft className="inline-block mr-2" />
+                Previous
+              </button>
+            }
+            {step < 5 ? (
+              <button onClick={handleNextStep} className="btn-primary ml-auto">
+                Next
+                <ChevronRight className="inline-block ml-2" />
+              </button>
+            ) : (
+              <button onClick={() => console.log('Booking submitted:', bookingData)} className="btn-primary ml-auto">
+                Confirm Booking
+                <ChevronRight className="inline-block ml-2" />
+              </button>
+            )}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="form-group">
-              <label htmlFor="adults" className="form-label">
-                Adults
-              </label>
-              <div className="relative">
-                <Users className="form-icon" />
-                <input
-                  type="number"
-                  id="adults"
-                  min="1"
-                  className="form-input"
-                  value={adults}
-                  onChange={(e) => setAdults(parseInt(e.target.value))}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="children" className="form-label">
-                Children
-              </label>
-              <div className="relative">
-                <Users className="form-icon" />
-                <input
-                  type="number"
-                  id="children"
-                  min="0"
-                  className="form-input"
-                  value={children}
-                  onChange={(e) => setChildren(parseInt(e.target.value))}
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="totalGuests" className="form-label">
-                Total Guests
-              </label>
-              <div className="relative">
-                <Users className="form-icon" />
-                <input
-                  type="number"
-                  id="totalGuests"
-                  className="form-input bg-gray-100"
-                  value={totalGuests}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="roomType" className="form-label">
-              Room Type
-            </label>
-            <div className="relative">
-              <Bed className="form-icon" />
-              <select
-                id="roomType"
-                className="form-input"
-                value={roomType}
-                onChange={(e) => setRoomType(e.target.value)}
-                required
-              >
-                <option value="">Select a room type</option>
-                <option value="standard">Standard Room</option>
-                <option value="deluxe">Deluxe Room</option>
-                <option value="suite">Suite</option>
-                <option value="penthouse">Penthouse</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="form-group">
-              <label htmlFor="confirmationCode" className="form-label">
-                Confirmation Code
-              </label>
-              <div className="relative">
-                <Hash className="form-icon" />
-                <input
-                  type="text"
-                  id="confirmationCode"
-                  className="form-input"
-                  value={confirmationCode}
-                  onChange={(e) => setConfirmationCode(e.target.value)}
-                  placeholder="Enter confirmation code (if applicable)"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="roomId" className="form-label">
-                Room ID
-              </label>
-              <div className="relative">
-                <Key className="form-icon" />
-                <input
-                  type="text"
-                  id="roomId"
-                  className="form-input"
-                  value={roomId}
-                  onChange={(e) => setRoomId(e.target.value)}
-                  placeholder="Enter room ID (if known)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <div className="flex items-center">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                required
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                I agree to the{' '}
-                <Link to="/terms" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Terms and Conditions
-                </Link>
-              </label>
-            </div>
-          </div>
-
-          <button type="submit" className="form-submit">
-            <span className="flex items-center justify-center">
-              <CreditCard className="h-6 w-6 mr-2" />
-              Book Now
-              <ChevronRight className="ml-2 h-6 w-6" />
-            </span>
-          </button>
         </form>
 
         <div className="why-book">
