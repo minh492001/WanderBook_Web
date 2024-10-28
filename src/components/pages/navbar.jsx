@@ -24,7 +24,7 @@ const Navbar = () => {
       setIsScrolled(window.scrollY > 10)
     }
 
-    const storedUserName = localStorage.getItem('userName')
+    const storedUserName = sessionStorage.getItem('email')
     if (storedUserName) {
       setUserName(storedUserName)
     }
@@ -46,8 +46,9 @@ const Navbar = () => {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('userName')
-    localStorage.removeItem('token') 
+    sessionStorage.removeItem('email')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('roles')
     setUserName('')
     setIsUserMenuOpen(false)
     setShowNotification(true)
