@@ -10,7 +10,8 @@ import BookingPage from './components/pages/bookingpage.jsx';
 import RoomManagementPage from './components/pages/roommanagerpage.jsx';
 import LoginPage from './components/auth/login-page.jsx';
 import RegisterPage from './components/auth/register-page.jsx';
-import ProfilePage from './components/user-pages/profile-page.jsx';
+import UserProfile from './components/user-pages/profile-page.jsx';
+import EditProfile from './components/user-pages/edit-profile-page.jsx';
 import DashboardPage from './components/admin-pages/dashboard-page.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -23,7 +24,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="/rooms" element={<RoomManagementPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/admin" element={<DashboardPage />} />
         </Routes>
     </Router>

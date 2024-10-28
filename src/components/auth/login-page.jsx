@@ -20,20 +20,28 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    try{ 
+    try {
       const loginData = { email, password };
-
-      if(Response.success){
-        showNotification(response.message, 'success');
-        sessionStorage.setItem('Username', response.user.fullName);
+      const response = await loginUser(loginData);
+    
+      if (response && response.token && response.roles) {
         sessionStorage.setItem('token', response.token);
-        setTimeout(() => navigate('/'), 1500);
-      }else{
-        showNotification('Login Failed: ' + response.message, 'error');
+        sessionStorage.setItem('email', response.email);
+        sessionStorage.setItem('roles', response.roles.includes('ADMIN') ? 'ADMIN' : 'ROLE_USER');
+    
+        if (response.roles.includes('ADMIN')) {
+          showNotification("Login for admin successful!", 'success');
+          navigate('/admin');
+        } else {
+          showNotification("Login successful!", 'success');
+          setTimeout(() => navigate('/'), 1500);
+        }
+      } else {
+        showNotification('Login Failed: Invalid response data', 'error');
       }
-    }catch(error){
+    } catch (error) {
       showNotification(error.message || 'An error occurred during login.', 'error');
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };

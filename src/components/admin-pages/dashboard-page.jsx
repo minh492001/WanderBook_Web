@@ -21,6 +21,7 @@ import BookingsManagement from './bookings-management-page.jsx';
 import UsersManagement from './users-management-page.jsx';
 import BranchesManagement from './branches-management.jsx';
 import ServicesManagement from './services-management-page.jsx'
+import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { icon: BedDouble, label: 'Rooms', component: RoomsManagement },
@@ -30,10 +31,34 @@ const menuItems = [
   { icon: Briefcase, label: 'Services', component: ServicesManagement },
 ]
 
-const Dashboard = () => {
+export default function Dashboard() {
   const [activeItem, setActiveItem] = React.useState('Rooms')
+  const navigate = useNavigate();
 
   const ActiveComponent = menuItems.find(item => item.label === activeItem)?.component || RoomsManagement
+
+  const handleLogout = async () => {
+    try {
+      // Call to your backend to invalidate the token
+      await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      // Clear client-side storage
+      sessionStorage.removeItem('email');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('roles');
+
+      // Redirect to login page
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Handle logout error (e.g., show an error message to the user)
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -118,7 +143,7 @@ const Dashboard = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -133,5 +158,3 @@ const Dashboard = () => {
     </div>
   )
 }
-
-export default Dashboard
