@@ -16,7 +16,7 @@ export const getHeader = () => {
 /* This is function to register a user */
 export async function registerUser(registration) {
 	try {
-		const response = await api.post("auth/register-user", registration)
+		const response = await api.post("/api/v2/auth/register", registration)
 		return response.data
 	} catch (error) {
 		if(error.response && error.response.data) {
@@ -30,7 +30,7 @@ export async function registerUser(registration) {
 /* This is function to login */
 export async function loginUser (login) {
 	try {
-		const response = await api.post("auth/login", login)
+		const response = await api.post("/api/v2/auth/login", login)
 		if(response.status >= 200 && response.status < 300) {
 			return response.data
 		} else {
