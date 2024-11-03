@@ -14,9 +14,9 @@ const RegisterPage = () => {
   const initialValues = {
     fullName: '',
     email: '',
-    phoneNumber: '',
+    phoneNo: '',
     address: '',
-    birthday: '',
+    dateOfBirth: '',
     password: '',
     confirmPassword: '',
   };
@@ -26,9 +26,9 @@ const RegisterPage = () => {
       .matches(/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/, "Please enter a valid full name")
       .required('Full name is required'),
     email: Yup.string().email('Invalid email address').required('Email is required'),
-    phoneNumber: Yup.string().required('Phone number is required'),
+    phoneNo: Yup.string().matches(/^[0-9]+$/, "Phone number must contain only digits").required('Phone number is required'),
     address: Yup.string().required('Address is required'),
-    birthday: Yup.date().required('Birthday is required'),
+    dateOfBirth: Yup.date().required('Birthday is required'),
     password: Yup.string()
       .min(8, 'Password must be at least 8 characters')
       .matches(/[a-zA-Z]/, 'Password must contain at least one letter')
@@ -45,9 +45,15 @@ const RegisterPage = () => {
     setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
   };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await registerUser(values);
+      const formattedValues = {
+        ...values,
+        dateOfBirth: new Date(values.dateOfBirth).getTime(),  // Chuyển đổi sang timestamp
+      };
+
+      await registerUser(formattedValues);
       showNotification('Registration successful! You can now log in.', 'success');
       setTimeout(() => navigate('/login'), 1500);
     } catch (error) {
@@ -121,7 +127,7 @@ const RegisterPage = () => {
               </div>
 
               <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="phoneNo" className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
                 <div className="relative rounded-md shadow-sm">
@@ -129,8 +135,8 @@ const RegisterPage = () => {
                     <Phone className="h-5 w-5 text-gray-400" />
                   </div>
                   <Field
-                    id="phoneNumber"
-                    name="phoneNumber"
+                    id="phoneNo"
+                    name="phoneNo"
                     type="tel"
                     className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base py-3"
                     placeholder="+1 (123) 456-7890"
@@ -159,7 +165,7 @@ const RegisterPage = () => {
               </div>
 
               <div>
-                <label htmlFor="birthday" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
                   Birthday
                 </label>
                 <div className="relative rounded-md shadow-sm">
@@ -167,8 +173,8 @@ const RegisterPage = () => {
                     <Calendar className="h-5 w-5 text-gray-400" />
                   </div>
                   <Field
-                    id="birthday"
-                    name="birthday"
+                    id="dateOfBirth"
+                    name="dateOfBirth"
                     type="date"
                     className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base py-3"
                   />

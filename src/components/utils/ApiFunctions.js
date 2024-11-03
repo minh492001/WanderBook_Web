@@ -6,7 +6,7 @@ export const api = axios.create({
 
 /* Header to Authorize */
 export const getHeader = () => {
-	const token = localStorage.getItem("token")
+	const token = sessionStorage.getItem("token")
 	return {
 		Authorization : `Bearer ${token}`,
 		"Content-Type" : "application/json"
@@ -207,3 +207,66 @@ export async function getUser(email) {
 		throw error
 	}
 }
+
+// Get all users (Admin only)
+export async function getAllUsers() {
+	try {
+	  const response = await api.get('/api/v2/user/all', { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw error;
+	}
+}
+
+  // Get user by ID (Admin only)
+export async function getUserById(id) {
+	try {
+	  const response = await api.get(`/api/v2/user/${id}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw error;
+	}
+}
+
+// Get user by email (Admin or User)
+export async function getUserByEmail(email) {
+	try {
+	  const response = await api.get(`/api/v2/user/email/${email}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw error;
+	}
+  }
+
+  // Soft delete user by ID (Admin only)
+export async function deleteUserById(id) {
+	try {
+	  const response = await api.delete(`/api/v2/user/${id}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw error;
+	}
+  }
+
+ // Soft delete user by email (Admin only)
+export async function deleteUserByEmail(email) {
+	try {
+	  const response = await api.delete(`/api/v2/user/by-email`, {
+		headers: getHeader(),
+		params: { email }
+	  });
+	  return response.data;
+	} catch (error) {
+	  console.error("Error deleting user by email:", error);
+	  throw error;
+	}
+  }
+  //update user by id (Admin only)
+  export const updateUser = async (id, updatedUser) => {
+	try {
+	  const response = await api.put(`/api/v2/user/${id}`, updatedUser, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw error;
+	}
+  }

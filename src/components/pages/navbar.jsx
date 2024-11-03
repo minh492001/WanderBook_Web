@@ -48,7 +48,7 @@ const Navbar = () => {
   const handleLogout = () => {
     sessionStorage.removeItem('email')
     sessionStorage.removeItem('token')
-    sessionStorage.removeItem('roles')
+    sessionStorage.removeItem('role')
     setUserName('')
     setIsUserMenuOpen(false)
     setShowNotification(true)

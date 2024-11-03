@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { User, Mail, Phone, MapPin, Calendar, Upload } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,18 +6,49 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
+import { updateUser, getUserByEmail } from '../utils/ApiFunctions'
+import { useNavigate } from 'react-router-dom'
 
-export default function EditProfile({ user = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "+1 (555) 123-4567",
-  address: "123 Main St, Anytown, USA",
-  joinDate: "January 1, 2023",
-  avatar: "/placeholder.svg?height=100&width=100",
-  bio: "A passionate individual with a love for technology and innovation."
-} }) {
-  const [formData, setFormData] = useState(user)
+export default function EditProfile() {
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    joinDate: "",
+    avatar: "",
+    dateOfBirth: ""
+  })
   const [avatarFile, setAvatarFile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true)
+        const userEmail = sessionStorage.getItem('userEmail')
+        if (!userEmail) {
+          throw new Error('User email not found')
+        }
+        const userData = await getUserByEmail(userEmail)
+        setFormData(userData)
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load user data. Please try again later.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [toast])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -38,12 +69,48 @@ export default function EditProfile({ user = {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Implement the logic to save the updated profile
-    console.log('Updated profile:', formData)
-    console.log('New avatar file:', avatarFile)
-    // You would typically send this data to your backend API here
+    try {
+      // Create a new FormData object
+      const formDataToSend = new FormData()
+
+      // Append all form fields to the FormData object
+      Object.keys(formData).forEach(key => {
+        formDataToSend.append(key, formData[key])
+      })
+
+      // Append the avatar file if it exists
+      if (avatarFile) {
+        formDataToSend.append('avatar', avatarFile)
+      }
+
+      // Call the updateUser API function
+      const updatedUser = await updateUser(formData.id, formDataToSend)
+
+      // Update the local state with the response from the server
+      setFormData(updatedUser)
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      })
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again later.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const backToProfilePage = () => {
+    navigate('/profile')
+  }
+
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>
   }
 
   return (
@@ -119,18 +186,18 @@ export default function EditProfile({ user = {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                rows={4}
-              />
-            </div>
+                <Label htmlFor="dateOfBirth">Birth Day</Label>
+                <Input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                />
+              </div>
           </CardContent>
           <CardFooter className="flex justify-end space-x-4">
-            <Button type="button" variant="outline">Cancel</Button>
+            <Button type="button" variant="outline" onClick={backToProfilePage}>Cancel</Button>
             <Button type="submit">Save Changes</Button>
           </CardFooter>
         </form>
