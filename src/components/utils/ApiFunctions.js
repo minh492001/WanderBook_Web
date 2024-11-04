@@ -270,3 +270,108 @@ export async function deleteUserByEmail(email) {
 	  throw error;
 	}
   }
+
+  //***service api functions 
+  //get all services
+  export async function getAllServices() {
+	try {
+	  const response = await api.get("/api/v2/services/all", { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw new Error("Error while getting service list");
+	}
+  }
+
+  //get service by id
+  export async function getServiceById(id) {
+	try {
+	  const response = await api.get(`/api/v2/services/${id}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.status === 404) {
+		throw new Error("Not found service");
+	  }
+	  throw new Error("Error while getting service");
+	}
+  }
+
+  //Get services within the price range
+  export async function getServicesByPriceRange(minPrice, maxPrice) {
+	try {
+	  const response = await api.get(`/api/v2/services/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw new Error("Error when getting list of services by price range");
+	}
+  }
+
+  //Check the existence of the service
+  export async function checkServiceExists(id) {
+	try {
+	  const response = await api.get(`/api/v2/services/exists/${id}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw new Error("Error checking service existence");
+	}
+  }
+
+  //Get service by name
+  export async function getServiceByName(serviceName) {
+	try {
+	  const response = await api.get(`/api/v2/services/name/${serviceName}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.status === 404) {
+		throw new Error("Service not found");
+	  }
+	  throw new Error("Error getting service information by name");
+	}
+  }
+
+  //Add new service (ADMIN only)
+  export async function addService(simpleService) {
+	try {
+	  const response = await api.post("/api/v2/services/add", simpleService, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  throw new Error("Error when adding new service");
+	}
+  }
+
+  //Update or create new services(ADMIN only)
+  export async function saveService(id, serviceEdit) {
+	try {
+	  const response = await api.post(`/api/v2/services/${id}`, serviceEdit, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.status === 400) {
+		throw new Error(error.response.data);
+	  }
+	  throw new Error("Error when updating or creating a new service");
+	}
+  }
+
+  //Delete service by ID(ADMIN only)
+  export async function deleteService(id) {
+	try {
+	  const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
+	  if (response.status === 200 || response.status === 204) {
+		return { success: true, message: "Dịch vụ đã được xóa thành công" };
+	  } else {
+		throw new Error("Không thể xóa dịch vụ");
+	  }
+	} catch (error) {
+	  console.error("Lỗi khi xóa dịch vụ:", error);
+	  if (error.response) {
+		switch (error.response.status) {
+		  case 404:
+			throw new Error("Dịch vụ không tồn tại hoặc đã bị xóa");
+		  case 403:
+			throw new Error("Bạn không có quyền xóa dịch vụ này");
+		  default:
+			throw new Error("Lỗi khi xóa dịch vụ. Vui lòng thử lại sau");
+		}
+	  }
+	  throw new Error("Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại");
+	}
+  }

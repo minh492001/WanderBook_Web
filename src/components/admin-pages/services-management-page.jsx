@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
@@ -21,24 +21,55 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-
-// Mock data for services
-const initialServices = [
-  { id: 1, name: 'WiFi', description: 'High-speed internet access', price: 0 },
-  { id: 2, name: 'Parking', description: 'Secure on-site parking', price: 10 },
-  { id: 3, name: 'Room Service', description: '24/7 in-room dining', price: 5 },
-]
+import { useToast } from "@/components/ui/use-toast"
+import { getAllServices, addService, saveService, deleteService } from '../utils/ApiFunctions'
 
 const ServicesManagement = () => {
-  const [services, setServices] = React.useState(initialServices)
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
-  const [newService, setNewService] = React.useState({ id: 0, name: '', description: '', price: 0 })
-  const [editingService, setEditingService] = React.useState(null)
+  const [services, setServices] = useState([])
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newService, setNewService] = useState({ id: 0, serviceName: '', description: '', price: '' })
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [serviceToDelete, setServiceToDelete] = useState(null)
+  const [editingService, setEditingService] = useState(null)
+  const { toast } = useToast()
 
-  const handleAddService = () => {
-    setServices([...services, { ...newService, id: services.length + 1 }])
-    setNewService({ id: 0, name: '', description: '', price: 0 })
-    setIsAddDialogOpen(false)
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  const showNotification = (message, type) => {
+    toast({
+      title: type === "success" ? "Success" : "Error",
+      description: message,
+      variant: type === "success" ? "default" : "destructive",
+    });
+  };
+
+  const fetchServices = async () => {
+    try {
+      const data = await getAllServices()
+      setServices(data)
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách dịch vụ:", error)
+      showNotification("Lỗi khi lấy danh sách dịch vụ", "error")
+    }
+  }
+
+  const handleAddService = async () => {
+    try {
+      const serviceToAdd = {
+        ...newService,
+        price: newService.price === '' ? 0 : Number(newService.price)
+      };
+      await addService(serviceToAdd)
+      setIsAddDialogOpen(false)
+      fetchServices()
+      setNewService({ id: 0, serviceName: '', description: '', price: '' })
+      showNotification("Dịch vụ đã được thêm thành công", "success")
+    } catch (error) {
+      console.error("Lỗi khi thêm dịch vụ:", error)
+      showNotification(error.response?.data?.message || "Lỗi khi thêm dịch vụ", "error")
+    }
   }
 
   const handleEditService = (service) => {
@@ -47,16 +78,39 @@ const ServicesManagement = () => {
     setIsAddDialogOpen(true)
   }
 
-  const handleUpdateService = () => {
-    setServices(services.map(service => service.id === editingService.id ? newService : service))
-    setNewService({ id: 0, name: '', description: '', price: 0 })
-    setEditingService(null)
-    setIsAddDialogOpen(false)
+  const handleUpdateService = async () => {
+    try {
+      await saveService(editingService.id, newService)
+      setIsAddDialogOpen(false)
+      fetchServices()
+      setNewService({ id: 0, serviceName: '', description: '', price: '' })
+      setEditingService(null)
+      showNotification("Dịch vụ đã được cập nhật thành công", "success")
+    } catch (error) {
+      console.error("Lỗi khi cập nhật dịch vụ:", error)
+      showNotification(error.response?.data?.message || "Lỗi khi cập nhật dịch vụ", "error")
+    }
   }
 
-  const handleDeleteService = (id) => {
-    setServices(services.filter(service => service.id !== id))
-  }
+  const handleDeleteService = async () => {
+    if(!serviceToDelete) return;
+
+    try {
+      const result = await deleteService(serviceToDelete.id);
+      if (result.success) {
+        showNotification(result.message, "success");
+        fetchServices(); // Cập nhật lại danh sách dịch vụ
+      } else {
+        throw new Error(result.message || "Không thể xóa dịch vụ");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa dịch vụ:", error);
+      showNotification(error.message, "error");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setServiceToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -78,13 +132,13 @@ const ServicesManagement = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+                <Label htmlFor="serviceName" className="text-right">
                   Name
                 </Label>
                 <Input
-                  id="name"
-                  value={newService.name}
-                  onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                  id="serviceName"
+                  value={newService.serviceName}
+                  onChange={(e) => setNewService({ ...newService, serviceName: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -106,8 +160,11 @@ const ServicesManagement = () => {
                 <Input
                   id="price"
                   type="number"
-                  value={newService.price}
-                  onChange={(e) => setNewService({ ...newService, price: parseFloat(e.target.value) })}
+                  value={newService.price === '' ? '' : newService.price}
+                  onChange={(e) => {
+                    const price = e.target.value === '' ? '' : Number(e.target.value);
+                    setNewService({ ...newService, price: isNaN(price) ? '' : price })
+                  }}
                   className="col-span-3"
                 />
               </div>
@@ -135,16 +192,31 @@ const ServicesManagement = () => {
             {services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell>{service.id}</TableCell>
-                <TableCell>{service.name}</TableCell>
+                <TableCell>{service.serviceName}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>${service.price}</TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="icon" onClick={() => handleEditService(service)}>
+                <div className="flex justify-stretch gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleEditService(service)}
+                    >
                       <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleDeleteService(service.id)}>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setServiceToDelete(service);
+                        setIsDeleteDialogOpen(true);
+                      }}
+                    >
                       <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
                     </Button>
                   </div>
                 </TableCell>
@@ -153,6 +225,24 @@ const ServicesManagement = () => {
           </TableBody>
         </Table>
       </div>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa dịch vụ</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa dịch vụ này không? Hành động này có thể đảo ngược.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteService}>
+              Xóa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
