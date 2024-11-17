@@ -22,41 +22,83 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getAllUsers, deleteUserById, deleteUserByEmail, updateUser } from '../utils/ApiFunctions'
-import { useToast } from "@/components/ui/use-toast"
-import { format } from 'date-fns';
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css';
+import { format, parseISO } from 'date-fns'
 
 const UsersManagement = () => {
-  const { toast } = useToast();
+  
   const [users, setUsers] = useState([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const [userToDelete, setUserToDelete] = React.useState(null)
   const [editingUser, setEditingUser] = React.useState(null)
+  const [originalUser, setOriginalUser] = React.useState(null)
 
   const handleEditUser = (user) => {
     setEditingUser(user);
+    setOriginalUser(user);
     setIsEditDialogOpen(true);
   };
 
   const handleUpdateUser = async () => {
     try {
-      const updatedUser = await updateUser(editingUser.id, editingUser);
-      setUsers(users.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
+      if (!originalUser) {
+        throw new Error("Dữ liệu người dùng ban đầu không được tìm thấy.");
+      }
+  
+      if (!editingUser.id) {
+        throw new Error("ID người dùng không được xác định.");
+      }
+  
+      const updatedUser = {};
+      if (editingUser.email !== originalUser.email) {
+        updatedUser.email = editingUser.email;
+      }
+      if (editingUser.phoneNo !== originalUser.phoneNo) {
+        updatedUser.phoneNo = editingUser.phoneNo;
+      }
+      if (editingUser.dateOfBirth !== originalUser.dateOfBirth) {
+        updatedUser.dateOfBirth = editingUser.dateOfBirth instanceof Date
+          ? editingUser.dateOfBirth.getTime()
+          : editingUser.dateOfBirth;
+      }
+  
+      updatedUser.id = editingUser.id; 
+  
+      const response = await updateUser(updatedUser.id, updatedUser);
+  
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === response.id ? { ...user, ...response } : user
+        )
+      );
+  
       setIsEditDialogOpen(false);
       setEditingUser(null);
-      toast({
-        title: "Successfully updated user",
-        description: "User information has been updated.",
-      });
+      toast.success("User has been updated successfully !.");
     } catch (error) {
-      console.error("Error updating user:", error);
-      toast({
-        title: "Error",
-        description: "Unable to update user information. Please try again later.",
-        variant: "destructive",
-      });
+      console.error("Lỗi khi cập nhật người dùng:", error);
+      toast.error(error.message ||"Failed to update user. Please try again later.");
     }
   };
+  
+  
+  
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const allUsers = await getAllUsers();
+        setUsers(allUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users. Please try again later.")
+      }
+    };
+
+    fetchUsers();
+  }, [toast]);
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
@@ -89,39 +131,44 @@ const UsersManagement = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const allUsers = await getAllUsers();
-        setUsers(allUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load users. Please try again later.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchUsers();
-  }, [toast]);
-
-  const formatDate = (longTimestamp) => {
-    if (!longTimestamp) return 'N/A';
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'N/A';
     try {
-      const milliseconds = Number(longTimestamp);
-      const date = milliseconds.toString().length === 13 
-        ? new Date(milliseconds)
-        : new Date(milliseconds * 1000);
-      return format(date, 'dd MM yyyy');
+      let date;
+      if (typeof dateValue === 'string') {
+        // Try parsing as ISO string
+        date = parseISO(dateValue);
+      } else if (typeof dateValue === 'number') {
+        // Assume it's a timestamp
+        date = new Date(dateValue);
+      } else if (dateValue instanceof Date) {
+        date = dateValue;
+      } else {
+        throw new Error('Invalid date format');
+      }
+      
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid date');
+      }
+      
+      return format(date, 'dd/MM/yyyy');
     } catch (error) {
       console.error('Error formatting date:', error);
       return 'Invalid Date';
     }
   };
 
+
   return (
+    <> 
+    <ToastContainer 
+       position="top-right"  
+       autoClose={5000}     
+       hideProgressBar={false} 
+       newestOnTop={false}   
+       closeOnClick={true}   
+       rtl={false}          
+    />
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Users Management</h2>
@@ -136,6 +183,7 @@ const UsersManagement = () => {
               <TableHead>Role</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Address</TableHead>
+              <TableHead>Password</TableHead>
               <TableHead>Date of Birth</TableHead>
               <TableHead>Joined Date</TableHead>
               <TableHead>Deleted At</TableHead>
@@ -149,8 +197,9 @@ const UsersManagement = () => {
                 <TableCell>{user.fullName}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
-                <TableCell>{user.phone_no}</TableCell>
+                <TableCell>{user.phoneNo}</TableCell>
                 <TableCell>{user.address}</TableCell>
+                <TableCell>{user.password}</TableCell>
                 <TableCell>{formatDate(user.dateOfBirth)}</TableCell>
                 <TableCell>{formatDate(user.createdAt)}</TableCell>
                 <TableCell>{formatDate(user.deletedAt)}</TableCell>
@@ -231,13 +280,13 @@ const UsersManagement = () => {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone_no" className="text-right">
+                <Label htmlFor="phoneNo" className="text-right">
                   Phone No
                 </Label>
                 <Input
-                  id="phone_no"
-                  value={editingUser.phone_no}
-                  onChange={(e) => setEditingUser({ ...editingUser, phone_no: e.target.value })}
+                  id="phoneNo"
+                  value={editingUser.phoneNo}
+                  onChange={(e) => setEditingUser({ ...editingUser, phoneNo: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -281,6 +330,7 @@ const UsersManagement = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   )
 }
 

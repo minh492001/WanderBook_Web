@@ -247,7 +247,7 @@ const BookingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="booking-container">
         <h1 className="booking-title">
-          Book Your <span className="text-indigo-600">Luxury Stay</span>
+          Book Hotel In <span className="text-indigo-600">Grand Lusso Hotel</span>
         </h1>
         <p className="booking-subtitle">
           Experience unparalleled comfort and elegance. Reserve your room now.

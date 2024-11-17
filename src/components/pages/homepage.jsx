@@ -162,7 +162,7 @@ const HomePage = () => {
                       <Star key={i} className="h-5 w-5 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-600 text-sm mb-4">Experience luxury redefined in our meticulously designed accommodations.</p>
+                  <p className="text-gray-600 text-sm mb-4">Experience Grand Lusso Hotel redefined in our meticulously designed accommodations.</p>
                   <p className="text-blue-600 font-semibold text-lg">From $299/night</p>
                 </div>
               </div>
@@ -288,8 +288,8 @@ const HomePage = () => {
               <ul className="space-y-2">
                 <li><Link to="/" className="text-gray-600  hover:text-blue-600 transition-colors duration-300">Home</Link></li>
                 <li><Link to="/rooms" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Accommodations</Link></li>
-                <li><Link to="/dining" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Dining Experiences</Link></li>
-                <li><Link to="/amenities" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Amenities & Services</Link></li>
+                <li><Link to="/restaurant" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Dining Experiences</Link></li>
+                <li><Link to="/amenities-and-services" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Amenities & Services</Link></li>
               </ul>
             </div>
             <div>
