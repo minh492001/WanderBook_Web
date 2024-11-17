@@ -6,7 +6,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">About Luxury Stays</h3>
+              <h3 className="text-lg font-semibold mb-4">About  Grand Lusso Hotel</h3>
               <p className="text-gray-400">Experience the pinnacle of hospitality with our world-class accommodations and services.</p>
             
             </div>
@@ -24,7 +24,7 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
               <p className="text-gray-400">123 Luxury Lane, Paradise City</p>
               <p className="text-gray-400">Phone: (123) 456-7890</p>
-              <p className="text-gray-400">Email: info@luxurystays.com</p>
+              <p className="text-gray-400">Email: info@grandlussohotel.com</p>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">

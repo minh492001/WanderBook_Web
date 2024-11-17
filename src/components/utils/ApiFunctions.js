@@ -16,7 +16,7 @@ export const getHeader = () => {
 /* This is function to register a user */
 export async function registerUser(registration) {
 	try {
-		const response = await api.post("/api/v2/auth/register", registration)
+		const response = await api.post(`/api/v2/auth/register`, registration)
 		return response.data
 	} catch (error) {
 		if(error.response && error.response.data) {
@@ -30,7 +30,7 @@ export async function registerUser(registration) {
 /* This is function to login */
 export async function loginUser (login) {
 	try {
-		const response = await api.post("/api/v2/auth/login", login)
+		const response = await api.post(`/api/v2/auth/login`, login)
 		if(response.status >= 200 && response.status < 300) {
 			return response.data
 		} else {
@@ -163,7 +163,7 @@ export async function bookRoom(roomId, booking) {
 export async function getBookingsByEmail(email) {
 	try {
 		const response = await api.get(`/bookings/user/${email}/bookings`, {
-			headers: getHeader() // add Header to Authorize
+			headers: getHeader() 
 		})
 		return response.data
 	} catch (error) {
@@ -176,7 +176,7 @@ export async function getBookingsByEmail(email) {
 export async function cancelBooking(bookingId) {
 	try {
 		const result = await api.delete(`/bookings/booking/${bookingId}/delete`, {
-			headers : getHeader() // add Header to Authorize
+			headers : getHeader() 
 		})
 		return result.data
 	} catch (error) {
@@ -231,6 +231,7 @@ export async function getUserById(id) {
 // Get user by email (Admin or User)
 export async function getUserByEmail(email) {
 	try {
+	  const token = sessionStorage.getItem("token");
 	  const response = await api.get(`/api/v2/user/email/${email}`, { headers: getHeader() });
 	  return response.data;
 	} catch (error) {
@@ -356,22 +357,206 @@ export async function deleteUserByEmail(email) {
 	try {
 	  const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
 	  if (response.status === 200 || response.status === 204) {
-		return { success: true, message: "Dịch vụ đã được xóa thành công" };
+		return { success: true, message: "Service was successfully deleted" };
 	  } else {
-		throw new Error("Không thể xóa dịch vụ");
+		throw new Error("Unable to delete service");
 	  }
 	} catch (error) {
-	  console.error("Lỗi khi xóa dịch vụ:", error);
+	  console.error("Error while deleting service:", error);
 	  if (error.response) {
 		switch (error.response.status) {
 		  case 404:
-			throw new Error("Dịch vụ không tồn tại hoặc đã bị xóa");
+			throw new Error("Service does not exist or has been removed");
 		  case 403:
-			throw new Error("Bạn không có quyền xóa dịch vụ này");
+			throw new Error("You do not have permission to delete this service.");
 		  default:
-			throw new Error("Lỗi khi xóa dịch vụ. Vui lòng thử lại sau");
+			throw new Error("Error deleting service. Please try again later.");
 		}
 	  }
-	  throw new Error("Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại");
+	  throw new Error("Connection error. Please check your network connection and try again.");
 	}
   }
+
+  /*Branch Management API Functions*/
+
+  export async function getAllBranches() {
+	try {
+	  const response = await api.get("/api/v2/branches/all", {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error fetching all branches: ${error.message}`);
+	}
+  }
+  
+
+  export async function getBranchById(id) {
+	try {
+	  const response = await api.get(`/api/v2/branches/${id}`, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.status === 404) {
+		throw new Error("Branch not found");
+	  }
+	  throw new Error(`Error fetching branch: ${error.message}`);
+	}
+  }
+
+  export async function getBranchesByCity(city) {
+	try {
+	  const response = await api.get(`/api/v2/branches/city/${city}`, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error fetching branches by city: ${error.message}`);
+	}
+  }
+
+  export async function getRoomsByBranchId(branchId) {
+	try {
+	  const response = await api.get(`/api/v2/branches/${branchId}/rooms`, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error fetching rooms for branch: ${error.message}`);
+	}
+  }
+
+  export async function addBranch(branch) {
+	try {
+	  const response = await api.post("/api/v2/branches", branch, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error adding new branch: ${error.message}`);
+	}
+  }
+
+  export async function deleteBranch(id) {
+	try {
+	  const response = await api.delete(`/api/v2/branches/${id}`, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error deleting branch: ${error.message}`);
+	}
+  }
+
+  export async function addServiceToBranch(branchId, serviceId) {
+	try {
+	  const response = await api.put(`/api/v2/branches/${branchId}/services/add?serviceId=${serviceId}`, null, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error adding service to branch: ${error.message}`);
+	}
+  }
+
+  export async function removeServiceFromBranch(branchId, serviceId) {
+	try {
+	  const response = await api.put(`/api/v2/branches/${branchId}/services/remove?serviceId=${serviceId}`, null, {
+		headers: getHeader()
+	  });
+	  return response.data;
+	} catch (error) {
+	  throw new Error(`Error removing service from branch: ${error.message}`);
+	}
+  }
+
+ /* This function changes the user's password */
+ export async function changePassword(userId, newPassword, confirmPassword) {
+    try {
+        const response = await api.put(
+            `/api/v2/user/changePassword/${userId}`,
+            { newPassword, confirmPassword }, // Chỉ gửi các trường cần thiết
+            {
+                headers: getHeader(), // Đảm bảo có Authorization header
+            }
+        );
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.data) {
+			console.error("Error sending verification email:", error);
+            throw new Error(error.response.data);
+        } else {
+            throw new Error(`Password change error: ${error.message}`);
+        }
+    }
+}
+
+/* This function verifies the OTP and resets the user's password */
+export async function verifyAndChangePassword(email, otp, newPassword, confirmPassword) {
+	try {
+	  const response = await api.put(
+		`/api/v2/forgot-password/verify-and-change-password/${email}`,
+		{ newPassword, confirmPassword }, // Request body containing password details
+		{
+		  params: { otp }, // Passing OTP as query parameter
+		}
+	  );
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.data) {
+		
+		throw new Error(error.response.data);
+	  } else {
+		throw new Error(`Error changing password: ${error.message}`);
+	  }
+	}
+  }
+
+  //* This function resets password for user forgot password  */
+/**
+ * Gửi mã xác minh OTP qua email
+ * @param {string} email - Địa chỉ email người dùng
+ * @returns {Promise} - Phản hồi từ server
+ */
+ export const sendVerificationEmail = async (email) => {
+   try {
+	 const response = await api.post(`/api/v2/forgot-password/verify-mail/${email}`);
+	 return response.data; // trả về nội dung từ phản hồi của server
+   } catch (error) {
+		console.log("Error sending verification email:", error);
+	 	throw error.response ? error.response.data : new Error("Failed to send verification email.");
+   }
+ };
+ 
+ /**
+  * Xác minh mã OTP và thay đổi mật khẩu
+  * @param {string} email - Địa chỉ email người dùng
+  * @param {number} otp - Mã OTP
+  * @param {Object} changePassword - Đối tượng chứa mật khẩu mới và mật khẩu xác nhận
+  * @returns {Promise} - Phản hồi từ server
+  */
+ export const verifyOtpAndChangePassword = async (email, otp, changePassword) => {
+	try {
+	  console.log("changePassword:", changePassword); // In ra để kiểm tra
+	  console.log("otp:", otp); // In ra để kiểm tra
+
+	  if (!changePassword.newPassword || !changePassword.confirmPassword) {
+		throw new Error("Both newPassword and confirmPassword must be provided.");
+	  }
+	  
+	  const response = await api.put(
+		`/api/v2/forgot-password/verify-and-change-password/${email}`,
+		changePassword,
+		{
+		  params: { otp: otp },
+		}
+	  );
+	  return response.data; // trả về nội dung từ phản hồi của server
+	} catch (error) {
+		console.error("Error while changing password:", error);
+		toast.error("Something went wrong. Please try again.");
+		throw error.response ? error.response.data : new Error("Failed to verify OTP or change password.");
+	}
+ };
+ 

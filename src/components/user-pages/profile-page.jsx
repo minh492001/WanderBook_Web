@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { User, Mail, Phone, MapPin, Calendar, Edit } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Calendar, Edit, Cake, RectangleEllipsis   } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,7 +16,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
+  
     const fetchUserData = async () => {
       try {
         setLoading(true)
@@ -39,11 +39,12 @@ const UserProfile = () => {
       }
     }
 
-    fetchUserData()
-  }, [toast])
+    useEffect(() => {
+      fetchUserData()
+    }, [navigate, toast]) 
 
   const handleEditProfile = () => {
-    navigate('/edit-profile') // Adjust this path as needed
+    navigate('/edit-profile') 
   }
 
   if (loading) {
@@ -58,20 +59,37 @@ const UserProfile = () => {
     return <div className="text-center py-8">No user data available</div>
   }
 
-  const formatDate = (longTimestamp) => {
-    console.log("Timestamp:", longTimestamp); // Kiểm tra giá trị longTimestamp
-    if (!longTimestamp) return 'N/A';
+  const backToHomePage = () => {
+    navigate('/')
+  }
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'N/A';
     try {
-      const milliseconds = Number(longTimestamp);
-      const date = milliseconds.toString().length === 13 
-        ? new Date(milliseconds)
-        : new Date(milliseconds * 1000);
-      return format(date, 'dd MM yyyy');
+      let date;
+      if (typeof dateValue === 'string') {
+        // Try parsing as ISO string
+        date = parseISO(dateValue);
+      } else if (typeof dateValue === 'number') {
+        // Assume it's a timestamp
+        date = new Date(dateValue);
+      } else if (dateValue instanceof Date) {
+        date = dateValue;
+      } else {
+        throw new Error('Invalid date format');
+      }
+      
+      if (isNaN(date.getTime())) {
+        throw new Error('Invalid date');
+      }
+      
+      return format(date, 'dd/MM/yyyy');
     } catch (error) {
       console.error('Error formatting date:', error);
       return 'Invalid Date';
     }
   };
+  
   return (
     <div className="container mx-auto px-4 py-8">
     <Card className="max-w-3xl mx-auto">
@@ -99,7 +117,7 @@ const UserProfile = () => {
               <Phone className="text-gray-400" />
               <div>
                 <Label className="text-sm text-gray-500">Phone</Label>
-                <p className="font-medium">{user.phone}</p>
+                <p className="font-medium">{user.phoneNo}</p>
               </div>
             </div>
           </div>
@@ -119,9 +137,21 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
+          <div className="flex items-center space-x-4">
+              <Cake className="text-gray-400" />
+              <div>
+                <Label className="text-sm text-gray-500">Date Of Birth</Label>
+                <p className="font-medium">{formatDate(user.dateOfBirth)}</p>
+              </div>
+          </div>
+          <div className='flex items-center space-x-4'>
+              <RectangleEllipsis className="text-gray-400" />
+              <p className="font-medium" onClick={() => navigate('/change-password')}>Change Password</p>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
+      <CardFooter className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={backToHomePage}>Back To Home</Button>
         <Button variant="outline" className="flex items-center" onClick={handleEditProfile}>
           <Edit className="w-4 h-4 mr-2" />
           Edit Profile
