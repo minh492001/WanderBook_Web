@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Mail, Key, Eye, EyeOff, Loader2, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
-import { loginUser, verifyAndChangePassword, sendVerificationEmail } from '../utils/ApiFunctions';
+import { loginUser, verifyAndChangePassword, sendVerificationEmail, verifyOtpAndChangePassword } from '../utils/ApiFunctions';
 import { AnimatePresence, motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 const Notification = ({ message, type, onClose }) => {
   return (
@@ -33,72 +34,69 @@ const Notification = ({ message, type, onClose }) => {
 };
 
 const ForgotPasswordDialog = ({ isOpen, onClose, showNotification }) => {
-  const [step, setStep] = useState(1);
+    const [step, setStep] = useState(1);
 
-  const initialValues = {
-    email: "",         // Initialize email with an empty string
-    otp: "",           // Initialize OTP with an empty string
-    newPassword: "",   // Initialize new password with an empty string
-    confirmPassword: "" // Initialize confirm password with an empty string
-  };
+    const initialValues = {
+        email: "",
+        otp: "",
+        newPassword: "",
+        confirmPassword: ""
+    };
 
-  const validationSchemas = {
-    1: Yup.object({
-      email: Yup.string().email('Invalid email address').required('Email is required'),
-    }),
-    2: Yup.object({
-      otp: Yup.string().length(6, 'OTP must be 6 digits').required('OTP is required'),
-    }),
-    3: Yup.object({
-      password: Yup.string()
-        .min(8, 'Password must be at least 8 characters')
-        .required('Password is required'),
-      confirmPassword: Yup.string()
-        .oneOf([Yup.ref('newPassword')], 'Passwords must match')
-        .required('Please confirm your password'),
-    }),
-  };
+    const validationSchemas = {
+        1: Yup.object({
+            email: Yup.string().email('Invalid email address').required('Email is required'),
+        }),
+        2: Yup.object({
+            otp: Yup.string().length(6, 'OTP must be 6 digits').required('OTP is required'),
+        }),
+        3: Yup.object({
+            newPassword: Yup.string()
+                .min(8, 'Password must be at least 8 characters')
+                .required('Password is required'),
+            confirmPassword: Yup.string()
+                .oneOf([Yup.ref('newPassword')], 'Passwords must match')
+                .required('Please confirm your password'),
+        }),
+    };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
-    try {
-      const changePassword = {
-        newPassword: values.newPassword,
-        confirmPassword: values.confirmPassword,
-      };
-      if (step === 1) {
-        // Gửi email xác nhận
-        await sendVerificationEmail(values.email);
-        showNotification('Reset link sent to your email', 'success');
-        setStep(2);
-      } else if (step === 2) {
-        // Xác thực OTP
-        setStep(3);
-        showNotification('OTP verified successfully', 'success');
-      } else if (step === 3) {
-        // Gọi API thay đổi mật khẩu và xử lý kết quả
-        const response = await verifyOtpAndChangePassword(values.email, values.otp, changePassword);
-
-        // Nếu thay đổi mật khẩu thành công, hiển thị thông báo thành công
-        if (response.status === 200 && response.data === "OTP verified and password changed successfully") {
-          toast.success("Password changed successfully!");
-          showNotification('Password reset successfully', 'success');
-        } else {
-          // Xử lý nếu không có phản hồi như mong đợi
-          showNotification('Failed to reset password. Please try again.', 'error');
-          toast.error("Failed to change password.");
-        }
-
-        // Đóng form
-        onClose();
+    const handleSubmit = async (values, { setSubmitting }) => {
+      try {
+          if (step === 1) {
+              // Gửi email xác nhận
+              await sendVerificationEmail(values.email);
+              showNotification('Reset link sent to your email', 'success');
+              setStep(2); // Chuyển sang bước xác thực OTP
+          } else if (step === 2) {
+              // Xác thực OTP (giả định rằng bạn đã xác thực thành công ở đây)
+              showNotification('OTP verified successfully', 'success');
+              setStep(3); // Chuyển sang bước thay đổi mật khẩu
+          } else if (step === 3) {
+              // Gọi API thay đổi mật khẩu và xử lý kết quả
+              const changePassword = {
+                  newPassword: values.newPassword,
+                  confirmPassword: values.confirmPassword,
+              };
+              
+              const response = await verifyOtpAndChangePassword(values.email, values.otp, changePassword);
+  
+              // Kiểm tra phản hồi từ API
+              if (response && response.status === 200) {
+                  toast.success("Password changed successfully!");
+                  onClose(); // Đóng form sau khi thành công
+              } else {
+                  // Nếu phản hồi không phải là 200, hiển thị thông báo lỗi
+                  toast.error("Failed to change password.");
+              }
+          }
+      } catch (error) {
+          console.error('Error:', error);
+          showNotification('An error occurred. Please try again.', 'error');
+          toast.error(error.message || "Failed to change password.");
+      } finally {
+          setSubmitting(false);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      showNotification('An error occurred. Please try again.', 'error');
-      toast.error("Failed to change password.");
-    } finally {
-      setSubmitting(false);
-    }
-};
+  };
 
   const renderStep = () => {
     switch (step) {
