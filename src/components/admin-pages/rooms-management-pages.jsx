@@ -22,42 +22,80 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { getAllRooms, addNewRoom, updateRoom, deleteRoom } from '../utils/ApiFunctions'; 
 
-// Mock data for rooms
-const initialRooms = [
-  { id: 1, room_type: 'Single', room_price: 100, is_booked: false, photo: '/placeholder.jpg' },
-  { id: 2, room_type: 'Double', room_price: 150, is_booked: true, photo: '/placeholder.jpg' },
-  { id: 3, room_type: 'Suite', room_price: 250, is_booked: false, photo: '/placeholder.jpg' },
-]
+
 
 const RoomsManagement = () => {
-  const [rooms, setRooms] = React.useState(initialRooms)
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
-  const [newRoom, setNewRoom] = React.useState({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null })
-  const [editingRoom, setEditingRoom] = React.useState(null)
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [newRoom, setNewRoom] = useState({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null });
+    const [editingRoom, setEditingRoom] = useState(null);
 
-  const handleAddRoom = () => {
-    setRooms([...rooms, { ...newRoom, id: rooms.length + 1, room_price: Number(newRoom.room_price) }])
-    setNewRoom({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null })
-    setIsAddDialogOpen(false)
+  const fetchRooms = async () => {
+    try {
+        const roomsData = await getAllRooms();
+        setRooms(roomsData);
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+};
+
+useEffect(() => {
+    fetchRooms();
+}, []);
+
+ // Hàm thêm phòng mới
+ const handleAddRoom = async () => {
+  try {
+      const addedRoom = await addNewRoom(newRoom); // Gọi API để thêm phòng
+      setRooms((prevRooms) => [...prevRooms, addedRoom]); // Cập nhật danh sách phòng
+      resetNewRoom(); // Reset thông tin phòng mới
+      setIsAddDialogOpen(false); // Đóng dialog thêm phòng
+  } catch (err) {
+      setError(err.message);
   }
+};
 
+  // Hàm chỉnh sửa phòng
   const handleEditRoom = (room) => {
-    setEditingRoom(room)
-    setNewRoom(room)
-    setIsAddDialogOpen(true)
-  }
+    setEditingRoom(room);
+    setNewRoom(room); // Thiết lập thông tin phòng để chỉnh sửa
+    setIsAddDialogOpen(true); // Mở dialog chỉnh sửa
+};
 
-  const handleUpdateRoom = () => {
-    setRooms(rooms.map(room => room.id === editingRoom.id ? { ...newRoom, room_price: Number(newRoom.room_price) } : room))
-    setNewRoom({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null })
-    setEditingRoom(null)
-    setIsAddDialogOpen(false)
-  }
+// Hàm cập nhật phòng
+const handleUpdateRoom = async () => {
+    try {
+        await updateRoom(editingRoom.id, newRoom); // Gọi API để cập nhật phòng
+        setRooms((prevRooms) =>
+            prevRooms.map((room) => (room.id === editingRoom.id ? { ...newRoom } : room))
+        ); // Cập nhật danh sách phòng
+        resetNewRoom(); // Reset thông tin phòng mới
+        setEditingRoom(null); // Reset thông tin chỉnh sửa
+        setIsAddDialogOpen(false); // Đóng dialog chỉnh sửa
+    } catch (err) {
+        setError(err.message);
+    }
+};
+   // Hàm xóa phòng
+   const handleDeleteRoom = async (id) => {
+    try {
+        await deleteRoom(id); // Gọi API để xóa phòng
+        setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id)); // Cập nhật danh sách phòng
+    } catch (err) {
+        setError(err.message);
+    }
+};
 
-  const handleDeleteRoom = (id) => {
-    setRooms(rooms.filter(room => room.id !== id))
-  }
+   // Hàm reset thông tin phòng mới
+   const resetNewRoom = () => {
+    setNewRoom({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null });
+};
 
   return (
     <div className="space-y-6">

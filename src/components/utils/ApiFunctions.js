@@ -13,6 +13,50 @@ export const getHeader = () => {
 	}
 }
 
+export async function getAllRooms() {
+    try {
+        const response = await api.get('/api/v2/rooms/all', { headers: getHeader() });
+        return response.data; // Trả về danh sách phòng
+    } catch (error) {
+        throw new Error(`Error fetching rooms: ${error.message}`);
+    }
+}
+
+// Thêm phòng mới
+export async function addNewRoom(roomData) {
+    try {
+        const response = await api.post('/api/v2/rooms/add', roomData, { headers: getHeader() });
+        return response.data; // Trả về thông tin phòng vừa thêm
+    } catch (error) {
+        throw new Error(`Error adding new room: ${error.message}`);
+    }
+}
+
+// Cập nhật thông tin phòng
+export async function updateRoom(roomId, roomData) {
+    try {
+        const response = await api.put(`/api/v2/rooms/${roomId}`, roomData, { headers: getHeader() });
+        return response.data; // Trả về thông tin phòng đã cập nhật
+    } catch (error) {
+        throw new Error(`Error updating room: ${error.message}`);
+    }
+}
+
+// Lấy thông tin phòng theo ID
+export async function getRoomById(roomId) {
+    try {
+        const response = await api.get(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
+        return response.data; // Trả về thông tin phòng
+    } catch (error) {
+        throw new Error(`Error fetching room by ID: ${error.message}`);
+    }
+}
+
+
+
+
+
+
 /* This is function to register a user */
 export async function registerUser(registration) {
 	try {
@@ -476,7 +520,7 @@ export async function deleteUserByEmail(email) {
     try {
         const response = await api.put(
             `/api/v2/user/changePassword/${userId}`,
-            { newPassword, confirmPassword }, // Chỉ gửi các trường cần thiết
+            { newPassword, confirmPassword },
             {
                 headers: getHeader(), // Đảm bảo có Authorization header
             }
@@ -484,7 +528,7 @@ export async function deleteUserByEmail(email) {
         return response.data;
     } catch (error) {
         if (error.response && error.response.data) {
-			console.error("Error sending verification email:", error);
+            console.error("Error changing password:", error);
             throw new Error(error.response.data);
         } else {
             throw new Error(`Password change error: ${error.message}`);
@@ -492,42 +536,50 @@ export async function deleteUserByEmail(email) {
     }
 }
 
-/* This function verifies the OTP and resets the user's password */
-export async function verifyAndChangePassword(email, otp, newPassword, confirmPassword) {
-	try {
-	  const response = await api.put(
-		`/api/v2/forgot-password/verify-and-change-password/${email}`,
-		{ newPassword, confirmPassword }, // Request body containing password details
-		{
-		  params: { otp }, // Passing OTP as query parameter
-		}
-	  );
-	  return response.data;
-	} catch (error) {
-	  if (error.response && error.response.data) {
-		
-		throw new Error(error.response.data);
-	  } else {
-		throw new Error(`Error changing password: ${error.message}`);
-	  }
-	}
-  }
+/**
+ * Xác minh mã OTP và thay đổi mật khẩu
+ * @param {string} email - Địa chỉ email người dùng
+ * @param {number} otp - Mã OTP
+ * @param {Object} changePassword - Đối tượng chứa mật khẩu mới và mật khẩu xác nhận
+ * @returns {Promise} - Phản hồi từ server
+ */export const verifyAndChangePassword = async (email, otp, changePassword) => {
+    try {
+        const response = await api.put(
+            `/api/v2/forgot-password/verify-and-change-password/${email}`,
+            changePassword,
+            { params: { otp } }
+        );
+        return response.data; // Trả về nội dung từ phản hồi của server
+    } catch (error) {
+        console.error("Error while changing password:", error);
+        if (error.response && error.response.data) {
+            console.error("Server responded with:", error.response.data);
+            throw new Error(error.response.data); // Trả về thông điệp lỗi từ server
+        } else {
+            throw new Error(`Error changing password: ${error.message}`); // Trả về thông điệp lỗi chung
+        }
+    }
+};
 
-  //* This function resets password for user forgot password  */
 /**
  * Gửi mã xác minh OTP qua email
  * @param {string} email - Địa chỉ email người dùng
  * @returns {Promise} - Phản hồi từ server
  */
+ /**
+ * Gửi mã xác minh OTP qua email
+ * @param {string} email - Địa chỉ email người dùng
+ * @returns {Promise} - Phản hồi từ server
+ */
  export const sendVerificationEmail = async (email) => {
-   try {
-	 const response = await api.post(`/api/v2/forgot-password/verify-mail/${email}`);
-	 return response.data; // trả về nội dung từ phản hồi của server
-   } catch (error) {
-		console.log("Error sending verification email:", error);
-	 	throw error.response ? error.response.data : new Error("Failed to send verification email.");
-   }
- };
+    try {
+        const response = await api.post(`/api/v2/forgot-password/verify-mail/${email}`);
+        return response.data; // trả về nội dung từ phản hồi của server
+    } catch (error) {
+        console.log("Error sending verification email:", error);
+        throw error.response ? error.response.data : new Error("Failed to send verification email.");
+    }
+};
  
  /**
   * Xác minh mã OTP và thay đổi mật khẩu
@@ -537,26 +589,24 @@ export async function verifyAndChangePassword(email, otp, newPassword, confirmPa
   * @returns {Promise} - Phản hồi từ server
   */
  export const verifyOtpAndChangePassword = async (email, otp, changePassword) => {
-	try {
-	  console.log("changePassword:", changePassword); // In ra để kiểm tra
-	  console.log("otp:", otp); // In ra để kiểm tra
+    try {
+        console.log("changePassword:", changePassword); // In ra để kiểm tra
+        console.log("otp:", otp); // In ra để kiểm tra
 
-	  if (!changePassword.newPassword || !changePassword.confirmPassword) {
-		throw new Error("Both newPassword and confirmPassword must be provided.");
-	  }
-	  
-	  const response = await api.put(
-		`/api/v2/forgot-password/verify-and-change-password/${email}`,
-		changePassword,
-		{
-		  params: { otp: otp },
-		}
-	  );
-	  return response.data; // trả về nội dung từ phản hồi của server
-	} catch (error) {
-		console.error("Error while changing password:", error);
-		toast.error("Something went wrong. Please try again.");
-		throw error.response ? error.response.data : new Error("Failed to verify OTP or change password.");
-	}
- };
- 
+        if (!changePassword.newPassword || !changePassword.confirmPassword) {
+            throw new Error("Both newPassword and confirmPassword must be provided.");
+        }
+
+        const response = await api.put(
+            `/api/v2/forgot-password/verify-and-change-password/${email}`,
+            changePassword,
+            { params: { otp } }
+        );
+        return response.data; // trả về nội dung từ phản hồi của server
+    } catch (error) {
+        console.error("Error while changing password:", error);
+        toast.error("Something went wrong. Please try again.");
+        throw error.response ? error.response.data : new Error("Failed to verify OTP or change password.");
+    }
+};
+
