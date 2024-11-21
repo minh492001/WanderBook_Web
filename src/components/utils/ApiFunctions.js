@@ -32,17 +32,8 @@ export async function addNewRoom(roomData) {
     }
 }
 
-// Cập nhật thông tin phòng
-export async function updateRoom(roomId, roomData) {
-    try {
-        const response = await api.put(`/api/v2/rooms/${roomId}`, roomData, { headers: getHeader() });
-        return response.data; // Trả về thông tin phòng đã cập nhật
-    } catch (error) {
-        throw new Error(`Error updating room: ${error.message}`);
-    }
-}
 
-// Lấy thông tin phòng theo ID
+
 export async function getRoomById(roomId) {
     try {
         const response = await api.get(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
@@ -86,83 +77,67 @@ export async function loginUser (login) {
 	}
 }
 
-/* This function adds a new room room to the database */
 export async function addRoom(photo, roomType, roomPrice) {
-	const formData = new FormData()
-	formData.append("photo", photo)
-	formData.append("roomType", roomType)
-	formData.append("roomPrice", roomPrice)
+	const formData = new FormData();
+	formData.append("photo", photo);
+	formData.append("roomType", roomType);
+	formData.append("roomPrice", roomPrice);
 
 	const response = await api.post("/rooms/add/new-room", formData, {
-		headers : getHeader() // add Header to Authorize
-	})
-	if (response.status === 201) {
-		return true
-	} else {
-		return false
-	}
+		headers: getHeader() // thêm Header để xác thực
+	});
+	return response.status === 201;
 }
 
 /* This function gets all room types from the database */
 export async function getRoomTypes() {
 	try {
-		const response = await api.get("/rooms/room/types")
-		return response.data
+		const response = await api.get("/rooms/room/types");
+		return response.data; // Trả về dữ liệu loại phòng
 	} catch (error) {
-		throw new Error("Error fetching room types")
+		throw new Error("Error fetching room types");
 	}
 }
 
-/* This function gets all rooms from the database */
-export async function getAllRooms() {
-	try{
-		const result = await api.get("/rooms/all-rooms")
-		return result.data
-	}
-	catch(error){
-		throw new Error("Error fetching rooms")
-	}
-}
 
-/* This function deletes a room by the Id */
+
 export async function deleteRoom(roomId) {
-	try{
-		const result = await api.delete(`/rooms/delete/room/${roomId}`, {
-			headers : getHeader() // add Header to Authorize
-		})
-		return result.data
-	} catch(error) {
-		throw new Error(`Error deleting room ${error.message}`)
-	}
-}
-
-/* This function update a room */
-export async function updateRoom(roomId, roomData) {
-	const formData = new FormData()
-	formData.append("roomType", roomData.roomType)
-	formData.append("roomPrice", roomData.roomPrice)
-	formData.append("photo", roomData.photo)
-	const response = await api.put(`/rooms/update/${roomId}`, formData, {
-		headers : getHeader() // add Header to Authorize
-	})
-	return response
-}
-
-/* This function gets a room by the Id */
-export async function getRoomById(roomId) {
 	try {
-		const result = await api.get(`/rooms/room/${roomId}`)
-		return result.data
-	}
-	catch(error) {
-		throw new Error(`Error fetching room ${error.message}`)
+		const result = await api.delete(`/rooms/delete/room/${roomId}`, {
+			headers: getHeader() // thêm Header để xác thực
+		});
+		return result.data; // Trả về dữ liệu phản hồi
+	} catch (error) {
+		throw new Error(`Error deleting room: ${error.message}`);
 	}
 }
 
-/* This function gets all available rooms from the database with given date and room type */
+export async function updateRoom(roomId, roomData) {
+	const formData = new FormData();
+	formData.append("roomType", roomData.roomType);
+	formData.append("roomPrice", roomData.roomPrice);
+	formData.append("photo", roomData.photo);
+
+	const response = await api.put(`/rooms/update/${roomId}`, formData, {
+		headers: getHeader() // thêm Header để xác thực
+	});
+	return response; // Trả về phản hồi từ API
+}
+
+// export async function getRoomById(roomId) {
+// 	try {
+// 		const result = await api.get(`/rooms/room/${roomId}`);
+// 		return result.data; // Trả về dữ liệu phòng theo ID
+// 	} catch (error) {
+// 		throw new Error(`Error fetching room: ${error.message}`);
+// 	}
+// }
+
 export async function getAvailableRooms(checkInDate, checkOutDate, roomType) {
-	const result = await api.get(`rooms/available-rooms?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomType=${roomType}`)
-	return result
+	const result = await api.get(`rooms/available-rooms`, {
+		params: { checkInDate, checkOutDate, roomType } // Sử dụng params để truyền tham số
+	});
+	return result.data; // Trả về dữ liệu phòng có sẵn
 }
 
 /* This function gets all bookings from the database */
