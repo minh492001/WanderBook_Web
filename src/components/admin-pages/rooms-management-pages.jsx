@@ -1,235 +1,318 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { getAllRooms, addNewRoom, updateRoom, deleteRoom } from '../utils/ApiFunctions';
-
+  getAllRoomsWithFutureBookings,
+  addNewRoom,
+  updateRoom,
+  deleteRoom,
+  getRoomTypes 
+} from '../utils/ApiFunctions';
 
 const RoomsManagement = () => {
-    const [rooms, setRooms] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [newRoom, setNewRoom] = useState({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null });
-    const [editingRoom, setEditingRoom] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dialogData, setDialogData] = useState(null); // Manage dialog state (add or edit).
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [roomStates, setRoomStates] = useState([]);
 
-    // Hàm lấy danh sách phòng
-    const fetchRooms = async () => {
-        try {
-            const roomsData = await getAllRooms();
-            setRooms(roomsData);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+  // Fetch all rooms.
+  useEffect(() => {
+    const fetchRoomsAndTypes = async () => {
+      setLoading(true);
+      try {
+          const roomsData = await getAllRoomsWithFutureBookings();
+          setRooms(roomsData);
+
+          const typesData = await getRoomTypes(); 
+          setRoomTypes(typesData); // Lưu room types vào state
+      } catch (err) {
+          setError('Failed to fetch data.');
+          console.error("Error fetching data:", err);
+      } finally {
+          setLoading(false);
+      }
+  };
+  fetchRoomsAndTypes();
+}, []);
+
+  // Handle Add or Update Room.
+  const handleSaveRoom = async () => {
+    try {
+        // Chuyển đổi kiểu dữ liệu
+        const roomData = {
+            ...dialogData.data,
+            branchId: Number(dialogData.data.branchId), // Chuyển đổi thành số
+            max_occupancy: Number(dialogData.data.max_occupancy), // Chuyển đổi thành số
+            price_per_night: Number(dialogData.data.price_per_night) // Chuyển đổi thành số
+        };
+
+        if (dialogData.editing) {
+            const updatedRoom = await updateRoom(dialogData.data.id, roomData);
+            setRooms((prevRooms) => prevRooms.map((room) => (room.id === dialogData.data.id ? updatedRoom : room)));
+            toast.success('Room updated successfully!');
+        } else {
+            const newRoom = await addNewRoom(roomData); // Gửi roomData đã được chuyển đổi
+            setRooms((prevRooms) => [...prevRooms, newRoom]);
+            toast.success('Room added successfully!');
         }
-    };
+        closeDialog();
+    } catch (err) {
+        console.error("Error saving room:", err); // Log lỗi để kiểm tra
+        toast.error('Failed to save room.');
+    }
+};
 
+  // Handle Delete Room.
+  const handleDeleteRoom = async (id) => {
+    try {
+      await deleteRoom(id);
+      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
+      toast.success('Room deleted successfully!');
+    } catch (err) {
+      toast.error('Failed to delete room.');
+    }
+  };
 
-    useEffect(() => {
-        fetchRooms();
-    }, []);
+  // Open dialog for adding or editing.
+  const openDialog = (room = null) => {
+    setDialogData({
+      editing: !!room,
+      data: room || {
+        id: 0,
+        room_type: '',
+        room_number: '',
+        price_per_night: 0,
+        max_occupancy: 1,
+        description: '',
+        state: 'OPEN',
+        branchId: '',
+        is_booked: false,
+        photo: '',
+      },
+    });
+  };
 
-    // Hàm thêm phòng mới
-    const handleAddRoom = async () => {
-        try {
-            const addedRoom = await addNewRoom(newRoom); // Gọi API để thêm phòng
-            setRooms((prevRooms) => [...prevRooms, addedRoom]); // Cập nhật danh sách phòng
-            resetNewRoom(); // Reset thông tin phòng mới
-            setIsAddDialogOpen(false); // Đóng dialog thêm phòng
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  // Close dialog.
+  const closeDialog = () => setDialogData(null);
 
-    // Hàm chỉnh sửa phòng
-    const handleEditRoom = (room) => {
-        setEditingRoom(room);
-        setNewRoom(room); // Thiết lập thông tin phòng để chỉnh sửa
-        setIsAddDialogOpen(true); // Mở dialog chỉnh sửa
-    };
+  // Handle file upload and convert to base64.
+  const handleFileUpload = (file) => {
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setDialogData((prevData) => ({
+                ...prevData,
+                data: { ...prevData.data, photo: reader.result }, // Chuyển đổi hình ảnh sang base64
+            }));
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
-    // Hàm cập nhật phòng
-    const handleUpdateRoom = async () => {
-        try {
-            await updateRoom(editingRoom.id, newRoom); // Gọi API để cập nhật phòng
-            setRooms((prevRooms) =>
-                prevRooms.map((room) => (room.id === editingRoom.id ? { ...newRoom } : room))
-            ); // Cập nhật danh sách phòng
-            resetNewRoom(); // Reset thông tin phòng mới
-            setEditingRoom(null); // Reset thông tin chỉnh sửa
-            setIsAddDialogOpen(false); // Đóng dialog chỉnh sửa
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Rooms Management</h2>
+        <Button onClick={() => openDialog()}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Room
+        </Button>
+      </div>
+      
+      {/* Display rooms */}
+      <div>
+        {Array.isArray(rooms) && rooms.length > 0 ? (
+            rooms.map((room) => (
+                <div key={room.id}>
+                    <h3>{room.room_number}</h3>
+                    <p>{room.description}</p>
+                </div>
+            ))
+        ) : (
+            <p>No rooms available</p>
+        )}
+      </div>
 
-    // Hàm xóa phòng
-    const handleDeleteRoom = async (id) => {
-        try {
-            await deleteRoom(id); // Gọi API để xóa phòng
-            setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id)); // Cập nhật danh sách phòng
-        } catch (err) {
-            setError(err.message);
-        }
-    };
-    // Hàm reset thông tin phòng mới
-    const resetNewRoom = () => {
-        setNewRoom({ id: 0, room_type: '', room_price: '', is_booked: false, photo: null });
-    };
-
-    return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">Rooms Management</h2>
-                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Room
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>{editingRoom ? 'Edit Room' : 'Add New Room'}</DialogTitle>
-                            <DialogDescription>
-                                {/* eslint-disable-next-line react/no-unescaped-entities */}
-                                {editingRoom ? 'Edit the details of the room here.' : 'Enter the details of the new room here.'} Click save when you're done.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="room_type" className="text-right">Type</Label>
-                                <Select value={newRoom.room_type} onValueChange={(value) => setNewRoom({ ...newRoom, room_type: value })}>
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select room type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Single">Single</SelectItem>
-                                        <SelectItem value="Double">Double</SelectItem>
-                                        <SelectItem value="Suite">Suite</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="room_price" className="text-right">Price</Label>
-                                <Input
-                                    id="room_price"
-                                    type="number"
-                                    value={newRoom.room_price}
-                                    onChange={(e) => setNewRoom({ ...newRoom, room_price: e.target.value })}
-                                    className="col-span-3"
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="is_booked" className="text-right">Booked</Label>
-                                <Switch
-                                    id="is_booked"
-                                    checked={newRoom.is_booked}
-                                    onCheckedChange={(checked) => setNewRoom({ ...newRoom, is_booked: checked })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="photo" className="text-right">Photo</Label>
-                                <Input
-                                    id="photo"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setNewRoom({ ...newRoom, photo: reader.result });
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
-                                    className="col-span-3"
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit" onClick={editingRoom ? handleUpdateRoom : handleAddRoom}>
-                                {editingRoom ? 'Update Room' : 'Add Room'}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {/* Bảng hiển thị danh sách phòng */}
-            <div className="rounded-md border">
-                {loading ? (
-                    <p>Loading...</p> // Hiển thị trong khi đang tải dữ liệu
-                ) : error ? (
-                    <p style={{ color: 'red' }}>Error: {error}</p> // Hiển thị lỗi nếu có
+      {/* Table */}
+      <div className="rounded-md border">
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p style={{ color: 'red' }}>Error: {error}</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Room Number</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Max Occupancy</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead>Room Type</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Image</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+        {rooms.map((room) => (
+          <TableRow key={room.id}>
+            <TableCell>{room.id}</TableCell>
+            <TableCell>{room.roomNumber}</TableCell> 
+            <TableCell>${room.pricePerNight !== null ? room.pricePerNight : 'N/A'}</TableCell> 
+            <TableCell>{room.maxOccupancy}</TableCell> {/* Thêm maxOccupancy */}
+            <TableCell>{room.state || 'Not specified'}</TableCell> {/* Thêm state */}
+            <TableCell>{room.roomType}</TableCell>
+            <TableCell>
+                {room.branchId !== null ? room.branchId : 'No branch assigned'} {/* Hiển thị thông báo nếu branchId là null */}
+            </TableCell>
+            <TableCell>
+                {room.photo ? (
+                    <img src={room.photo} alt={`Room ${room.id}`} className="w-16 h-16 object-cover rounded" />
                 ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>ID</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Booked</TableHead>
-                                <TableHead>Photo</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rooms.map((room) => (
-                                <TableRow key={room.id}>
-                                    <TableCell>{room.id}</TableCell>
-                                    <TableCell>{room.room_type}</TableCell>
-                                    <TableCell>${room.room_price}</TableCell>
-                                    <TableCell>{room.is_booked ? 'Yes' : 'No'}</TableCell>
-                                    <TableCell>
-                                        {room.photo ? (
-                                            <img src={room.photo} alt={`Room ${room.id}`} className="w-16 h-16 object-cover rounded" />
-                                        ) : (
-                                            <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500">No image</div>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {/* Nút chỉnh sửa và xóa */}
-                                        <div className="flex space-x-2">
-                                            <Button variant="outline" size="icon" onClick={() => handleEditRoom(room)}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="outline" size="icon" onClick={() => handleDeleteRoom(room.id)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500">
+                        No image available {/* Hiển thị thông báo nếu photo là null */}
+                    </div>
                 )}
+            </TableCell>
+            <TableCell>{room.description}</TableCell>
+            <TableCell>
+                <div className="flex space-x-2">
+                    <Button variant="outline" size="icon" onClick={() => openDialog(room)}>
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => handleDeleteRoom(room.id)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            </TableCell>
+          </TableRow>
+          ))}
+        </TableBody>
+          </Table>
+        )}
+      </div>
+
+      {/* Dialog */}
+      {dialogData && (
+        <Dialog open={!!dialogData} onOpenChange={closeDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{dialogData.editing ? 'Edit Room' : 'Add New Room'}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {/* Room fields (type, number, price, etc.) */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Room Type</Label>
+                <Select
+                  value={dialogData.data.room_type}
+                  onValueChange={(value) =>
+                    setDialogData((prevData) => ({
+                      ...prevData,
+                      data: { ...prevData.data, room_type: value },
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select room type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roomTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Other fields */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Room Number</Label>
+                <Input
+                  value={dialogData.data.room_number}
+                  onChange={(e) =>
+                    setDialogData((prevData) => ({
+                      ...prevData,
+                      data: { ...prevData.data, room_number: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+
+              {/* Other fields like price, occupancy, description */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Price per Night</Label>
+                <Input
+                  type="number"
+                  value={dialogData.data.price_per_night}
+                  onChange={(e) =>
+                    setDialogData((prevData) => ({
+                      ...prevData,
+                      data: { ...prevData.data, price_per_night: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Max Occupancy</Label>
+                <Input
+                  type="number"
+                  value={dialogData.data.max_occupancy}
+                  onChange={(e) =>
+                    setDialogData((prevData) => ({
+                      ...prevData,
+                      data: { ...prevData.data, max_occupancy: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Branch ID</Label>
+                <Input 
+                    type="number" 
+                    value={dialogData.data.branchId} 
+                    onChange={(e) => setDialogData((prevData) => ({
+                        ...prevData,
+                        data: { ...prevData.data, branchId: e.target.value }, // Đảm bảo tên trường là branchId
+                    }))} 
+                />
+              </div>
+              <div className="grid grid-cols items-center gap-4">
+                <Label>Description</Label>
+                <Textarea
+                  value={dialogData.data.description}
+                  onChange={(e) =>
+                    setDialogData((prevData) => ({
+                      ...prevData,
+                      data: { ...prevData.data, description: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <Label>Room Image</Label>
+              <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e.target.files[0])} />
             </div>
-        </div>
-    );
+            <DialogFooter>
+              <Button onClick={handleSaveRoom}>Save</Button>
+              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
 };
 
 export default RoomsManagement;
