@@ -13,41 +13,6 @@ export const getHeader = () => {
 	}
 }
 
-export async function getAllRooms() {
-    try {
-        const response = await api.get('/api/v2/rooms/all', { headers: getHeader() });
-        return response.data; // Trả về danh sách phòng
-    } catch (error) {
-        throw new Error(`Error fetching rooms: ${error.message}`);
-    }
-}
-
-// Thêm phòng mới
-export async function addNewRoom(roomData) {
-    try {
-        const response = await api.post('/api/v2/rooms/add', roomData, { headers: getHeader() });
-        return response.data; // Trả về thông tin phòng vừa thêm
-    } catch (error) {
-        throw new Error(`Error adding new room: ${error.message}`);
-    }
-}
-
-
-
-export async function getRoomById(roomId) {
-    try {
-        const response = await api.get(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
-        return response.data; // Trả về thông tin phòng
-    } catch (error) {
-        throw new Error(`Error fetching room by ID: ${error.message}`);
-    }
-}
-
-
-
-
-
-
 /* This is function to register a user */
 export async function registerUser(registration) {
 	try {
@@ -77,68 +42,116 @@ export async function loginUser (login) {
 	}
 }
 
-export async function addRoom(photo, roomType, roomPrice) {
-	const formData = new FormData();
-	formData.append("photo", photo);
-	formData.append("roomType", roomType);
-	formData.append("roomPrice", roomPrice);
-
-	const response = await api.post("/rooms/add/new-room", formData, {
-		headers: getHeader() // thêm Header để xác thực
-	});
-	return response.status === 201;
-}
-
-/* This function gets all room types from the database */
-export async function getRoomTypes() {
-	try {
-		const response = await api.get("/rooms/room/types");
-		return response.data; // Trả về dữ liệu loại phòng
-	} catch (error) {
-		throw new Error("Error fetching room types");
-	}
+/* This function gets all rooms with future bookings */
+export async function getAllRoomsWithFutureBookings() {
+    try {
+        const response = await api.get("/api/v2/rooms/all", { headers: getHeader() });
+        return response.data; // Return the list of rooms
+    } catch (error) {
+        console.error(`Error fetching rooms: ${error.message}`);
+        throw error; // Rethrow the error for further handling in the UI
+    }
 }
 
 
-
-export async function deleteRoom(roomId) {
-	try {
-		const result = await api.delete(`/rooms/delete/room/${roomId}`, {
-			headers: getHeader() // thêm Header để xác thực
-		});
-		return result.data; // Trả về dữ liệu phản hồi
-	} catch (error) {
-		throw new Error(`Error deleting room: ${error.message}`);
-	}
+/* This function gets a room by its ID */
+export async function getRoomById(roomId) {
+    try {
+        const response = await api.get(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
+        return response.data; // Return the room details
+    } catch (error) {
+        console.error(`Error fetching room by ID: ${error.message}`);
+        throw error;
+    }
 }
 
+
+/* This function adds a new room */
+export async function addNewRoom(roomData) {
+    try {
+        const response = await api.post("/api/v2/rooms/add", roomData, { headers: getHeader() });
+        return response.data; // Return the added room details
+    } catch (error) {
+        console.error(`Error adding new room: ${error.message}`);
+        throw error;
+    }
+}
+
+
+/* This function updates a room */
 export async function updateRoom(roomId, roomData) {
-	const formData = new FormData();
-	formData.append("roomType", roomData.roomType);
-	formData.append("roomPrice", roomData.roomPrice);
-	formData.append("photo", roomData.photo);
-
-	const response = await api.put(`/rooms/update/${roomId}`, formData, {
-		headers: getHeader() // thêm Header để xác thực
-	});
-	return response; // Trả về phản hồi từ API
+    try {
+        const response = await api.put(`/api/v2/rooms/${roomId}`, roomData, { headers: getHeader() });
+        return response.data; // Return the updated room details
+    } catch (error) {
+        console.error(`Error updating room: ${error.message}`);
+        throw error;
+    }
 }
 
-// export async function getRoomById(roomId) {
-// 	try {
-// 		const result = await api.get(`/rooms/room/${roomId}`);
-// 		return result.data; // Trả về dữ liệu phòng theo ID
-// 	} catch (error) {
-// 		throw new Error(`Error fetching room: ${error.message}`);
-// 	}
-// }
 
-export async function getAvailableRooms(checkInDate, checkOutDate, roomType) {
-	const result = await api.get(`rooms/available-rooms`, {
-		params: { checkInDate, checkOutDate, roomType } // Sử dụng params để truyền tham số
-	});
-	return result.data; // Trả về dữ liệu phòng có sẵn
+/* This function deletes a room */
+export async function deleteRoom(roomId) {
+    try {
+        const response = await api.delete(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
+        return response.data; // Return confirmation of deletion
+    } catch (error) {
+        console.error(`Error deleting room: ${error.message}`);
+        throw error;
+    }
 }
+
+
+/* This function checks if a room exists by its number */
+export async function checkRoomExistsByNumber(roomNumber) {
+    try {
+        const response = await api.get(`/api/v2/rooms/exists?roomNumber=${roomNumber}`, { headers: getHeader() });
+        return response.data; // Return boolean indicating existence
+    } catch (error) {
+        console.error(`Error checking room existence: ${error.message}`);
+        throw error;
+    }
+}
+
+/* This function gets rooms by their state */
+export async function getRoomsByState(state) {
+    try {
+        const response = await api.get(`/api/v2/rooms/state/${state}`, { headers: getHeader() });
+        return response.data; // Return list of rooms in the specified state
+    } catch (error) {
+        console.error(`Error fetching rooms by state: ${error.message}`);
+        throw error;
+    }
+}
+
+
+/* This function gets rooms by type and price range */
+export async function getRoomsByTypeAndPrice(roomType, minPrice, maxPrice) {
+    try {
+        const response = await api.get(`/api/v2/rooms/type-price`, {
+            params: { roomType, minPrice, maxPrice },
+            headers: getHeader()
+        });
+        return response.data; // Return list of rooms matching criteria
+    } catch (error) {
+        console.error(`Error fetching rooms by type and price range: ${error.message}`);
+        throw error;
+    }
+}
+
+export const getRoomTypes = async () => {
+    try {
+        const response = await api.get(`/api/v2/rooms/room-types`, {
+            headers: getHeader()
+        });
+        return response.data; // Return list of rooms matching criteria
+    } catch (error) {
+        console.error(`Error fetching rooms type: ${error.message}`);
+        throw error;
+    }
+};
+
+
 
 /* This function gets all bookings from the database */
 export async function getAllBookings() {
