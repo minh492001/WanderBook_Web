@@ -23,7 +23,7 @@ const RoomsManagement = () => {
   const [error, setError] = useState(null);
   const [dialogData, setDialogData] = useState(null); // Manage dialog state (add or edit).
   const [roomTypes, setRoomTypes] = useState([]);
-  const [roomStates, setRoomStates] = useState([]);
+ 
 
   // Fetch all rooms.
   useEffect(() => {
@@ -48,26 +48,34 @@ const RoomsManagement = () => {
   // Handle Add or Update Room.
   const handleSaveRoom = async () => {
     try {
-        // Chuyển đổi kiểu dữ liệu
         const roomData = {
-            ...dialogData.data,
-            branchId: Number(dialogData.data.branchId), // Chuyển đổi thành số
-            max_occupancy: Number(dialogData.data.max_occupancy), // Chuyển đổi thành số
-            price_per_night: Number(dialogData.data.price_per_night) // Chuyển đổi thành số
+            branchId: dialogData.data.branchId,
+            roomNumber: dialogData.data.roomNumber,
+            roomType: dialogData.data.roomType,
+            pricePerNight: Number(dialogData.data.pricePerNight),
+            maxOccupancy: Number(dialogData.data.maxOccupancy),
+            description: dialogData.data.description,
+            photo: dialogData.data.photo || null
         };
 
+        console.log('Room Data:', roomData);
+        console.log('Room ID:', dialogData.data.id); // Log roomId
+
         if (dialogData.editing) {
+            if (!dialogData.data.id) {
+                throw new Error('Room ID is missing for update');
+            }
             const updatedRoom = await updateRoom(dialogData.data.id, roomData);
             setRooms((prevRooms) => prevRooms.map((room) => (room.id === dialogData.data.id ? updatedRoom : room)));
             toast.success('Room updated successfully!');
         } else {
-            const newRoom = await addNewRoom(roomData); // Gửi roomData đã được chuyển đổi
+            const newRoom = await addNewRoom(roomData);
             setRooms((prevRooms) => [...prevRooms, newRoom]);
             toast.success('Room added successfully!');
         }
         closeDialog();
     } catch (err) {
-        console.error("Error saving room:", err); // Log lỗi để kiểm tra
+        console.error('Error saving room:', err);
         toast.error('Failed to save room.');
     }
 };
@@ -84,38 +92,59 @@ const RoomsManagement = () => {
   };
 
   // Open dialog for adding or editing.
-  const openDialog = (room = null) => {
-    setDialogData({
-      editing: !!room,
-      data: room || {
-        id: 0,
-        room_type: '',
-        room_number: '',
-        price_per_night: 0,
-        max_occupancy: 1,
-        description: '',
-        state: 'OPEN',
-        branchId: '',
-        is_booked: false,
-        photo: '',
-      },
-    });
-  };
+  const initializeRoomData = (room = null) => {
+    return {
+        id: room ? room.id : null,
+        branchId: room ? room.branchId : '', 
+        roomNumber: room ? room.roomNumber : '',
+        roomType: room ? room.roomType : '',
+        pricePerNight: room ? room.pricePerNight : 0,
+        maxOccupancy: room ? room.maxOccupancy : 1,
+        description: room ? room.description : '',
+        photo: room ? room.photo : null,
+    };
+};
 
-  // Close dialog.
-  const closeDialog = () => setDialogData(null);
+const openDialog = (room = null) => {
+  console.log("Opening dialog for room:", room); // Debugging line
+  setDialogData({
+      editing: !!room,
+      data: initializeRoomData(room),
+  });
+};
+
+// Close dialog
+const closeDialog = () => setDialogData(null);
+
 
   // Handle file upload and convert to base64.
-  const handleFileUpload = (file) => {
+const handleFileUpload = (file) => {
     if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-            setDialogData((prevData) => ({
-                ...prevData,
-                data: { ...prevData.data, photo: reader.result }, // Chuyển đổi hình ảnh sang base64
-            }));
+            const base64Data = reader.result.split(',')[1]; // Lấy phần base64 không có metadata
+
+            const formData = new FormData();
+            formData.append('photo', base64Data); // Gửi đúng base64 không phải Blob
+
+            // Kiểm tra dữ liệu formData
+            for (let pair of formData.entries()) {
+                console.log(pair[0]+ ': ' + pair[1]);
+            }
+
+            fetch("https://localhost:8080/api/v2/rooms/upload", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Upload thành công", data);
+            })
+            .catch(error => {
+                console.error("Lỗi khi upload ảnh:", error);
+            });
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file);  // Chuyển file thành base64
     }
 };
 
@@ -125,7 +154,7 @@ const RoomsManagement = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Rooms Management</h2>
         <Button onClick={() => openDialog()}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Room
+          <PlusCircle className="mr-2 h-4 w-5" /> Add Room
         </Button>
       </div>
       
@@ -207,20 +236,23 @@ const RoomsManagement = () => {
       {/* Dialog */}
       {dialogData && (
         <Dialog open={!!dialogData} onOpenChange={closeDialog}>
-          <DialogContent>
+          <DialogContent aria-labelledby="dialog-title" aria-describedby="dialog-description">
             <DialogHeader>
               <DialogTitle>{dialogData.editing ? 'Edit Room' : 'Add New Room'}</DialogTitle>
             </DialogHeader>
+            <p id="dialog-description" className="sr-only">
+              Use this dialog to add or edit room details. Please fill out the necessary fields below.
+            </p>
             <div className="grid gap-4 py-4">
               {/* Room fields (type, number, price, etc.) */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label>Room Type</Label>
                 <Select
-                  value={dialogData.data.room_type}
+                  value={dialogData.data.roomType}
                   onValueChange={(value) =>
                     setDialogData((prevData) => ({
                       ...prevData,
-                      data: { ...prevData.data, room_type: value },
+                      data: { ...prevData.data, roomType: value },
                     }))
                   }
                 >
@@ -241,11 +273,11 @@ const RoomsManagement = () => {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label>Room Number</Label>
                 <Input
-                  value={dialogData.data.room_number}
+                  value={dialogData.data.roomNumber}
                   onChange={(e) =>
                     setDialogData((prevData) => ({
                       ...prevData,
-                      data: { ...prevData.data, room_number: e.target.value },
+                      data: { ...prevData.data, roomNumber: e.target.value },
                     }))
                   }
                 />
@@ -256,11 +288,11 @@ const RoomsManagement = () => {
                 <Label>Price per Night</Label>
                 <Input
                   type="number"
-                  value={dialogData.data.price_per_night}
+                  value={dialogData.data.pricePerNight}
                   onChange={(e) =>
                     setDialogData((prevData) => ({
                       ...prevData,
-                      data: { ...prevData.data, price_per_night: e.target.value },
+                      data: { ...prevData.data, pricePerNight: e.target.value },
                     }))
                   }
                 />
@@ -269,11 +301,11 @@ const RoomsManagement = () => {
                 <Label>Max Occupancy</Label>
                 <Input
                   type="number"
-                  value={dialogData.data.max_occupancy}
+                  value={dialogData.data.maxOccupancy}
                   onChange={(e) =>
                     setDialogData((prevData) => ({
                       ...prevData,
-                      data: { ...prevData.data, max_occupancy: e.target.value },
+                      data: { ...prevData.data, maxOccupancy: e.target.value },
                     }))
                   }
                 />

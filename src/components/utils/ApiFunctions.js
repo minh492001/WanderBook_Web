@@ -67,22 +67,31 @@ export async function getRoomById(roomId) {
 
 
 /* This function adds a new room */
-export async function addNewRoom(roomData) {
+export const addNewRoom = async (roomData) => {
     try {
-        const response = await api.post("/api/v2/rooms/add", roomData, { headers: getHeader() });
-        return response.data; // Return the added room details
+        console.log('Sending payload to API:', roomData); // Log payload
+        const response = await api.post('/api/v2/rooms/add', roomData, {
+            headers: getHeader(), // Sử dụng hàm getHeader
+        });
+        console.log('API response:', response.data); // Log phản hồi từ API
+        return response.data;
     } catch (error) {
-        console.error(`Error adding new room: ${error.message}`);
+        console.error('Error adding new room:', error.response?.data || error.message); // Log lỗi chi tiết
         throw error;
     }
-}
+};
 
 
 /* This function updates a room */
 export async function updateRoom(roomId, roomData) {
     try {
+        console.log("Updating room with ID:", roomId); // Log roomId
+        if (!roomId) {
+            throw new Error("Room ID is required for updating.");
+        }
+
         const response = await api.put(`/api/v2/rooms/${roomId}`, roomData, { headers: getHeader() });
-        return response.data; // Return the updated room details
+        return response.data; // Trả về dữ liệu đã cập nhật
     } catch (error) {
         console.error(`Error updating room: ${error.message}`);
         throw error;
@@ -90,16 +99,16 @@ export async function updateRoom(roomId, roomData) {
 }
 
 
-/* This function deletes a room */
-export async function deleteRoom(roomId) {
-    try {
-        const response = await api.delete(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
-        return response.data; // Return confirmation of deletion
-    } catch (error) {
-        console.error(`Error deleting room: ${error.message}`);
-        throw error;
-    }
-}
+/* This function delete a room */
+export const deleteRoom = async (roomId) => {
+	try {
+	  const response = await api.delete(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
+	  return response.data;
+	} catch (error) {
+	  console.error(`Error deleting room: ${error.response ? error.response.data : error.message}`);
+	  throw new Error('Could not delete room. Please try again later.');
+	}
+  };
 
 
 /* This function checks if a room exists by its number */
