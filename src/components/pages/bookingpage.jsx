@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import '../style-pages/booking-page.css'
 
 const BookingPage = () => {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     checkInDate: '',
     checkOutDate: '',
@@ -13,12 +13,27 @@ const BookingPage = () => {
     branch: '',
     roomType: '',
     selectedRoom: null,
-  })
+  });
+  const [branches, setBranches] = useState([]);
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [totalGuests, setTotalGuests] = useState(1); // Khai báo và khởi tạo totalGuests
 
-  const branches = ['Ha Noi', 'Ho Chi Minh City', 'Da Nang', 'Nha Trang']
-  const roomTypes = ['Standard', 'Deluxe', 'Suite', 'Penthouse']
-
-  const totalGuests = bookingData.adults + bookingData.children
+  // Fetch dữ liệu khi component mount
+  useEffect(() => {
+    // Fetch branches
+    fetch('/api/branches')
+        .then(response => response.json())
+        .then(data => {
+          console.log('Dữ liệu trả về từ API:', data);
+          if (Array.isArray(data)) {
+            setBranches(data);
+          } else {
+            console.error('Expected an array of branches');
+            setBranches([]);
+          }
+        })
+        .catch(error => console.error('Error fetching branches:', error));
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
