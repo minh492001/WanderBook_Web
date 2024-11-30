@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import {React, useState, useEffect } from 'react';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { Button } from "@/components/ui/button";
