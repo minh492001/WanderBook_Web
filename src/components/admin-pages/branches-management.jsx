@@ -58,14 +58,16 @@
         const data = await getAllBranches();
         setBranches(data);
       } catch (error) {
-        console.error("Error fetching branches:", error);
+        console.error("Detailed error in fetchBranches:", error);
         toast({
           title: "Error",
-          description: "Failed to load branches. Please try again later.",
+          description: `Failed to load branches: ${error.message}. Please check the console for more details.`,
           variant: "destructive",
         });
       }
     };
+
+
 
     const fetchServices = async () => {
       try {

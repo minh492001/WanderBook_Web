@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X, User, LogOut, UserCircle } from 'lucide-react'
-import '../style-pages/navbar.css'
+import '../styles/navbar.css'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)

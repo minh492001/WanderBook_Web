@@ -1,20 +1,20 @@
 import {React, useState, useEffect } from 'react';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Button } from "@/components/ui/button";
+import { Button } from "@radix-ui/themes";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   getAllRoomsWithFutureBookings,
   addNewRoom,
   updateRoom,
   deleteRoom,
-  getRoomTypes 
+  getRoomTypes,
+    getAllBranches
 } from '../utils/ApiFunctions';
 
 const RoomsManagement = () => {
@@ -23,29 +23,34 @@ const RoomsManagement = () => {
   const [error, setError] = useState(null);
   const [dialogData, setDialogData] = useState(null); // Manage dialog state (add or edit).
   const [roomTypes, setRoomTypes] = useState([]);
+  const [branches, setBranches] = useState([]);
  
 
   // Fetch all rooms.
   useEffect(() => {
-    const fetchRoomsAndTypes = async () => {
-      setLoading(true);
-      try {
-          const roomsData = await getAllRoomsWithFutureBookings();
-          setRooms(roomsData);
+      const fetchData = async () => {
+          setLoading(true);
+          try {
+              const [roomsData, typesData] = await Promise.all([
+                  getAllRoomsWithFutureBookings(),
+                  getRoomTypes(),
 
-          const typesData = await getRoomTypes(); 
-          setRoomTypes(typesData); // Lưu room types vào state
-      } catch (err) {
-          setError('Failed to fetch data.');
-          console.error("Error fetching data:", err);
-      } finally {
-          setLoading(false);
-      }
-  };
-  fetchRoomsAndTypes();
-}, []);
+              ]);
+              setRooms(roomsData);
+              setRoomTypes(typesData);
 
-  // Handle Add or Update Room.
+          } catch (err) {
+              setError('Failed to fetch data.');
+              console.error("Error fetching data:", err);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchData();
+  }, []);
+
+
+    // Handle Add or Update Room.
   const handleSaveRoom = async () => {
     try {
         const roomData = {
@@ -57,9 +62,6 @@ const RoomsManagement = () => {
             description: dialogData.data.description,
             photo: dialogData.data.photo || null
         };
-
-        console.log('Room Data:', roomData);
-        console.log('Room ID:', dialogData.data.id); // Log roomId
 
         if (dialogData.editing) {
             if (!dialogData.data.id) {
@@ -164,7 +166,6 @@ const handleFileUpload = (file) => {
             rooms.map((room) => (
                 <div key={room.id}>
                     <h3>{room.room_number}</h3>
-                    <p>{room.description}</p>
                 </div>
             ))
         ) : (
@@ -243,103 +244,104 @@ const handleFileUpload = (file) => {
             <p id="dialog-description" className="sr-only">
               Use this dialog to add or edit room details. Please fill out the necessary fields below.
             </p>
-            <div className="grid gap-4 py-4">
-              {/* Room fields (type, number, price, etc.) */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Room Type</Label>
-                <Select
-                  value={dialogData.data.roomType}
-                  onValueChange={(value) =>
-                    setDialogData((prevData) => ({
-                      ...prevData,
-                      data: { ...prevData.data, roomType: value },
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select room type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roomTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="grid gap-4 py-4">
+                  {/* Room fields (type, number, price, etc.) */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label>Room Type</Label>
+                      <Select
+                          value={dialogData.data.roomType}
+                          onValueChange={(value) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, roomType: value},
+                              }))
+                          }
+                      >
+                          <SelectTrigger>
+                              <SelectValue placeholder="Select room type"/>
+                          </SelectTrigger>
+                          <SelectContent>
+                              {roomTypes.map((type) => (
+                                  <SelectItem key={type} value={type}>
+                                      {type}
+                                  </SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                  </div>
 
-              {/* Other fields */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Room Number</Label>
-                <Input
-                  value={dialogData.data.roomNumber}
-                  onChange={(e) =>
-                    setDialogData((prevData) => ({
-                      ...prevData,
-                      data: { ...prevData.data, roomNumber: e.target.value },
-                    }))
-                  }
-                />
-              </div>
+                  {/* Other fields */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label>Room Number</Label>
+                      <Input
+                          value={dialogData.data.roomNumber}
+                          onChange={(e) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, roomNumber: e.target.value},
+                              }))
+                          }
+                      />
+                  </div>
 
-              {/* Other fields like price, occupancy, description */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Price per Night</Label>
-                <Input
-                  type="number"
-                  value={dialogData.data.pricePerNight}
-                  onChange={(e) =>
-                    setDialogData((prevData) => ({
-                      ...prevData,
-                      data: { ...prevData.data, pricePerNight: e.target.value },
-                    }))
-                  }
-                />
+                  {/* Other fields like price, occupancy, description */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label>Price per Night</Label>
+                      <Input
+                          type="number"
+                          value={dialogData.data.pricePerNight}
+                          onChange={(e) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, pricePerNight: e.target.value},
+                              }))
+                          }
+                      />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label>Max Occupancy</Label>
+                      <Input
+                          type="number"
+                          value={dialogData.data.maxOccupancy}
+                          onChange={(e) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, maxOccupancy: e.target.value},
+                              }))
+                          }
+                      />
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">Branch</Label>
+                      <Select
+                          value={dialogData.data.branchId}
+                          onValueChange={(value) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, branchId: value},
+                              }))
+                          }
+                      >
+                          <SelectTrigger className="col-span-3">
+                              <SelectValue placeholder="Select branch"/>
+                          </SelectTrigger>
+                          <SelectContent>
+                              {branches.map((branch) => (
+                                  <SelectItem key={branch.id} value={branch.id.toString()}>
+                                      {branch.branchName}
+                                  </SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                  </div>
+                  <Label>Room Image</Label>
+                  <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e.target.files[0])}/>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Max Occupancy</Label>
-                <Input
-                  type="number"
-                  value={dialogData.data.maxOccupancy}
-                  onChange={(e) =>
-                    setDialogData((prevData) => ({
-                      ...prevData,
-                      data: { ...prevData.data, maxOccupancy: e.target.value },
-                    }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label>Branch ID</Label>
-                <Input 
-                    type="number" 
-                    value={dialogData.data.branchId} 
-                    onChange={(e) => setDialogData((prevData) => ({
-                        ...prevData,
-                        data: { ...prevData.data, branchId: e.target.value }, // Đảm bảo tên trường là branchId
-                    }))} 
-                />
-              </div>
-              <div className="grid grid-cols items-center gap-4">
-                <Label>Description</Label>
-                <Textarea
-                  value={dialogData.data.description}
-                  onChange={(e) =>
-                    setDialogData((prevData) => ({
-                      ...prevData,
-                      data: { ...prevData.data, description: e.target.value },
-                    }))
-                  }
-                />
-              </div>
-              <Label>Room Image</Label>
-              <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e.target.files[0])} />
-            </div>
-            <DialogFooter>
-              <Button onClick={handleSaveRoom}>Save</Button>
-              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-            </DialogFooter>
+              <DialogFooter>
+                  <Button onClick={handleSaveRoom}>Save</Button>
+                  <Button variant="outline" onClick={closeDialog}>Cancel</Button>
+              </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
