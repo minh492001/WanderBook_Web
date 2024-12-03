@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Calendar, Users, MapPin, IceCream, Award, UserCheck, DollarSign } from 'lucide-react'
 import Navbar from './navbar';
 import Footer from './footer';
-import '../style-pages/home-page.css';
+import '../styles/home-page.css';
 
 const HomePage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)

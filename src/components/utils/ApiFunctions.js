@@ -420,19 +420,35 @@ export async function deleteUserByEmail(email) {
 
   /*Branch Management API Functions*/
 
-  export async function getAllBranches() {
+export async function getAllBranches() {
 	try {
-	  const response = await api.get("/api/v2/branches/all", {
-		headers: getHeader()
-	  });
-	  return response.data;
+		const response = await api.get("/api/v2/branches/all", {
+			headers: getHeader()
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error fetching all branches: ${error.message}`);
+		console.error("Detailed error in getAllBranches:", error);
+		if (error.response) {
+			// The request was made and the server responded with a status code
+			// that falls out of the range of 2xx
+			console.error("Error response data:", error.response.data);
+			console.error("Error response status:", error.response.status);
+			console.error("Error response headers:", error.response.headers);
+		} else if (error.request) {
+			// The request was made but no response was received
+			console.error("Error request:", error.request);
+		} else {
+			// Something happened in setting up the request that triggered an Error
+			console.error("Error message:", error.message);
+		}
+		throw new Error(`Error fetching all branches: ${error.message}`);
 	}
-  }
-  
+}
 
-  export async function getBranchById(id) {
+
+
+
+export async function getBranchById(id) {
 	try {
 	  const response = await api.get(`/api/v2/branches/${id}`, {
 		headers: getHeader()

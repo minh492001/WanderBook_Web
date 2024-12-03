@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import '../style-pages/booking-page.css'
+import '../styles/booking-page.css'
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -18,7 +18,9 @@ const BookingPage = () => {
   
   const [branches, setBranches] = useState([]);
   const [roomTypes, setRoomTypes] = useState([]);
-  const [totalGuests, setTotalGuests] = useState(1); // Khai báo và khởi tạo totalGuests
+
+  const totalGuests = bookingData.adults + bookingData.children
+
 
   // Fetch dữ liệu khi component mount
   useEffect(() => {
@@ -145,151 +147,97 @@ const BookingPage = () => {
       case 2:
         return (
             <>
-              <h2 className="text-2xl font-semibold mb-4">Number of Guests</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <h2 className="text-3xl font-bold mb-6 text-gray-800">Number of Guests</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="form-group">
-                  <label htmlFor="children" className="form-label text-gray-700 font-medium mb-2 block">Adults</label>
-                  <div className="flex items-center border rounded-md overflow-hidden shadow-sm">
-                    <button type="button"
-                            onClick={() => handleDecrement('adults')}
-                            className="bg-gray-100
-                            dark:bg-gray-700
-                            dark:hover:bg-gray-600
-                            dark:border-gray-600
-                            hover:bg-gray-200 border
-                            border-gray-300
-                            rounded-s-lg p-3 h-11
-                            focus:ring-gray-100
-                            dark:focus:ring-gray-700
-                            focus:ring-2 focus:outline-none"
-                            disabled={bookingData.adults <= 1}
+                  <label htmlFor="adults" className="block text-sm font-medium text-gray-700 mb-2">Adults</label>
+                  <div className="flex items-center border rounded-lg overflow-hidden shadow-sm">
+                    <button
+                        type="button"
+                        onClick={() => handleDecrement('adults')}
+                        className="flex-shrink-0 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 border-r border-gray-300 h-12 w-12 flex items-center justify-center transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        disabled={bookingData.adults <= 1}
                     >
-                      <svg className="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true"
-                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M1 1h16"/>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                       </svg>
                     </button>
-                    <input type="number"
-                           id="adults"
-                           name="adults"
-                           value={bookingData.adults}
-                           aria-describedby="helper-text-explanation"
-                           className="bg-gray-50 border-x-0
-                           border-gray-300 h-11 text-center
-                           text-gray-900 text-sm focus:ring-blue-500
-                           focus:border-blue-500 block w-full py-2.5"
-                           placeholder="0"
-                           required
-                           readOnly
+                    <input
+                        type="number"
+                        id="adults"
+                        name="adults"
+                        value={bookingData.adults}
+                        className="flex-grow bg-white text-gray-700 font-medium text-center text-lg h-12 w-full focus:outline-none"
+                        readOnly
                     />
-                    <button type="button"
-                            onClick={() => handleIncrement('adults')}
-                            className="bg-gray-100
-                            dark:bg-gray-700
-                            dark:hover:bg-gray-600
-                            dark:border-gray-600
-                            hover:bg-gray-200 border
-                            border-gray-300
-                            rounded-s-lg p-3 h-11
-                            focus:ring-gray-100
-                            dark:focus:ring-gray-700
-                            focus:ring-2
-                            focus:outline-none"
-                            disabled={bookingData.adults >= 4}
+                    <button
+                        type="button"
+                        onClick={() => handleIncrement('adults')}
+                        className="flex-shrink-0 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 border-l border-gray-300 h-12 w-12 flex items-center justify-center transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        disabled={bookingData.adults >= 4}
                     >
-                      <svg className="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true"
-                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 1v16M1 9h16"/>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </button>
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="children" className="form-label text-gray-700 font-medium mb-2 block">Children</label>
-                  <div className="flex items-center border rounded-md overflow-hidden shadow-sm">
-                    <button type="button"
-                            onClick={() => handleDecrement('children')}
-                            className="bg-gray-100
-                            dark:bg-gray-700
-                            dark:hover:bg-gray-600
-                            dark:border-gray-600
-                            hover:bg-gray-200 border
-                            border-gray-300
-                            rounded-s-lg p-3 h-11
-                            focus:ring-gray-100
-                            dark:focus:ring-gray-700
-                            focus:ring-2 focus:outline-none"
-                            disabled={bookingData.children <= 0}
+                  <label htmlFor="children" className="block text-sm font-medium text-gray-700 mb-2">Children</label>
+                  <div className="flex items-center border rounded-lg overflow-hidden shadow-sm">
+                    <button
+                        type="button"
+                        onClick={() => handleDecrement('children')}
+                        className="flex-shrink-0 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 border-r border-gray-300 h-12 w-12 flex items-center justify-center transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        disabled={bookingData.children <= 0}
                     >
-                      <svg className="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true"
-                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M1 1h16"/>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                       </svg>
                     </button>
-                    <input type="number"
-                           id="children"
-                           name="children"
-                           value={bookingData.children}
-                           aria-describedby="helper-text-explanation"
-                           className="bg-gray-50 border-x-0
-                           border-gray-300 h-11 text-center
-                           text-gray-900 text-sm focus:ring-blue-500
-                           focus:border-blue-500 block w-full py-2.5"
-                           placeholder="0"
-                           required
-                           readOnly
+                    <input
+                        type="number"
+                        id="children"
+                        name="children"
+                        value={bookingData.children}
+                        className="flex-grow bg-white text-gray-700 font-medium text-center text-lg h-12 w-full focus:outline-none"
+                        readOnly
                     />
-                    <button type="button"
-                            onClick={() => handleIncrement('children')}
-                            className="bg-gray-100
-                            dark:bg-gray-700
-                            dark:hover:bg-gray-600
-                            dark:border-gray-600
-                            hover:bg-gray-200 border
-                            border-gray-300
-                            rounded-s-lg p-3 h-11
-                            focus:ring-gray-100
-                            dark:focus:ring-gray-700
-                            focus:ring-2
-                            focus:outline-none"
-                            disabled={bookingData.children >= 5}
+                    <button
+                        type="button"
+                        onClick={() => handleIncrement('children')}
+                        className="flex-shrink-0 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 border-l border-gray-300 h-12 w-12 flex items-center justify-center transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        disabled={bookingData.children >= 5}
                     >
-                      <svg className="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true"
-                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 1v16M1 9h16"/>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </button>
                   </div>
                 </div>
+
                 <div className="form-group">
-                  <label htmlFor="totalGuests" className="form-label">Total Guests</label>
+                  <label htmlFor="totalGuests" className="block text-sm font-medium text-gray-700 mb-2">Total Guests</label>
                   <div className="relative">
-                    <Users className="form-icon"/>
-                    <input type="number"
-                           id="totalGuests"
-                           value={totalGuests}
-                           aria-describedby="helper-text-explanation"
-                           className="bg-gray-50
-                           rounded
-                           border-x-2
-                           border-gray-300 h-11 text-center
-                           text-gray-900 text-sm focus:ring-blue-500
-                           focus:border-blue-500 block w-full py-2.5"
-                           placeholder="0"
-                           required
-                           readOnly
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Users className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        type="number"
+                        id="totalGuests"
+                        value={totalGuests}
+                        className="bg-gray-100 text-gray-700 font-medium border border-gray-300 rounded-lg h-12 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        readOnly
                     />
                   </div>
                 </div>
               </div>
-              {errors.guests && <p className="text-red-500 text-sm mt-1">{errors.guests}</p>}
+              {errors.guests && <p className="text-red-500 text-sm mt-4">{errors.guests}</p>}
             </>
         )
+
+
       case 3:
         return (
             <>
