@@ -66,9 +66,6 @@
         });
       }
     };
-
-
-
     const fetchServices = async () => {
       try {
         const data = await getAllServices();
@@ -88,16 +85,22 @@
         if (!newBranch.branchName || !newBranch.address || !newBranch.city) {
           toast({
             title: "Error",
-            description: "Please fill in the branch information completely.",
+            description: "Please fill in all the branch information.",
             variant: "destructive",
           });
           return;
         }
 
+        // Gọi API thêm chi nhánh
         await addBranch(newBranch);
+
+        // Đóng dialog và làm mới dữ liệu
         setIsAddDialogOpen(false);
         fetchBranches();
+
+        // Reset lại thông tin chi nhánh
         setNewBranch({ branchName: '', address: '', city: '', serviceProvides: [] });
+
         toast({
           title: "Success",
           description: "Branch added successfully.",
@@ -112,9 +115,13 @@
       }
     };
 
+
     const handleEditBranch = async (branch) => {
       try {
+        // Lấy dữ liệu chi nhánh theo ID
         const branchData = await getBranchById(branch.id);
+
+        // Đặt dữ liệu chi nhánh đang chỉnh sửa
         setEditingBranch(branchData);
         setIsEditDialogOpen(true);
       } catch (error) {
@@ -127,12 +134,19 @@
       }
     };
 
+
     const handleUpdateBranch = async () => {
       try {
+        // Gọi API để cập nhật chi nhánh
         await addBranch(editingBranch);
+
+        // Đóng dialog và làm mới dữ liệu
         setIsEditDialogOpen(false);
         fetchBranches();
+
+        // Reset lại chi nhánh đang chỉnh sửa
         setEditingBranch(null);
+
         toast({
           title: "Success",
           description: "Branch updated successfully.",
@@ -147,14 +161,20 @@
       }
     };
 
+
     const handleDeleteBranch = async () => {
+      // Kiểm tra xem có chi nhánh nào được chọn để xóa không
       if (!branchToDelete) return;
 
       try {
+        // Gọi API để xóa chi nhánh
         await deleteBranch(branchToDelete.id);
+
+        // Làm mới dữ liệu và đóng dialog
         fetchBranches();
         setIsDeleteDialogOpen(false);
         setBranchToDelete(null);
+
         toast({
           title: "Success",
           description: "Branch deleted successfully.",
@@ -169,18 +189,21 @@
       }
     };
 
+
     const handleServiceChange = (service, checked) => {
       setNewBranch(prev => {
+        // Cập nhật danh sách dịch vụ cung cấp khi checkbox thay đổi
         const updatedServices = checked
-          ? [...prev.serviceProvides, service]
-          : prev.serviceProvides.filter(s => s.id !== service.id);
-        
+            ? [...prev.serviceProvides, service]  // Thêm dịch vụ
+            : prev.serviceProvides.filter(s => s.id !== service.id); // Xóa dịch vụ
+
         return {
           ...prev,
-          serviceProvides: updatedServices
+          serviceProvides: updatedServices,
         };
       });
     };
+
     
     return (
       <div className="space-y-6">
