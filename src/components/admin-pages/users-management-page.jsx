@@ -44,11 +44,11 @@ const UsersManagement = () => {
   const handleUpdateUser = async () => {
     try {
       if (!originalUser) {
-        throw new Error("Dữ liệu người dùng ban đầu không được tìm thấy.");
+        throw new Error("The original user data was not found.");
       }
   
       if (!editingUser.id) {
-        throw new Error("ID người dùng không được xác định.");
+        throw new Error("The user ID is not defined.");
       }
   
       const updatedUser = {};
@@ -78,13 +78,10 @@ const UsersManagement = () => {
       setEditingUser(null);
       toast.success("User has been updated successfully !.");
     } catch (error) {
-      console.error("Lỗi khi cập nhật người dùng:", error);
+      console.error("Error updating users:", error);
       toast.error(error.message ||"Failed to update user. Please try again later.");
     }
   };
-  
-  
-  
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -192,7 +189,7 @@ const UsersManagement = () => {
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.id} className={user.deletedAt ? 'line-through' : ''}>
+              <TableRow key={user.id} className={user.deletedAt ? 'line-through opacity-50' : ''}>
                 <TableCell>{user.id}</TableCell>
                 <TableCell>{user.fullName}</TableCell>
                 <TableCell>{user.email}</TableCell>

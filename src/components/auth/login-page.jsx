@@ -1,38 +1,40 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Mail, Key, Eye, EyeOff, Loader2, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
-import { loginUser, verifyAndChangePassword, sendVerificationEmail, verifyOtpAndChangePassword } from '../utils/ApiFunctions';
+import { loginUser, sendVerificationEmail, verifyOtpAndChangePassword } from '../utils/ApiFunctions';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 
+// eslint-disable-next-line react/prop-types
 const Notification = ({ message, type, onClose }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 50 }}
-      className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-      } text-white flex items-center`}
-    >
-      {type === 'success' ? (
-        <CheckCircle className="w-5 h-5 mr-2" />
-      ) : (
-        <XCircle className="w-5 h-5 mr-2" />
-      )}
-      <span>{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-4 text-white hover:text-gray-200 focus:outline-none"
-      >
-        <XCircle className="w-4 h-4" />
-      </button>
-    </motion.div>
-  );
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white flex items-center z-50`}
+        >
+            {type === 'success' ? (
+                <CheckCircle className="w-5 h-5 mr-2" />
+            ) : (
+                <XCircle className="w-5 h-5 mr-2" />
+            )}
+            <span>{message}</span>
+            <button
+                onClick={onClose}
+                className="ml-4 text-white hover:text-gray-200 focus:outline-none"
+            >
+                <XCircle className="w-4 h-4" />
+            </button>
+        </motion.div>
+    );
 };
 
+// eslint-disable-next-line react/prop-types
 const ForgotPasswordDialog = ({ isOpen, onClose, showNotification }) => {
     const [step, setStep] = useState(1);
 
@@ -66,26 +68,23 @@ const ForgotPasswordDialog = ({ isOpen, onClose, showNotification }) => {
               // Gửi email xác nhận
               await sendVerificationEmail(values.email);
               showNotification('Reset link sent to your email', 'success');
-              setStep(2); // Chuyển sang bước xác thực OTP
+              setStep(2);
           } else if (step === 2) {
-              // Xác thực OTP (giả định rằng bạn đã xác thực thành công ở đây)
               showNotification('OTP verified successfully', 'success');
-              setStep(3); // Chuyển sang bước thay đổi mật khẩu
+              setStep(3);
           } else if (step === 3) {
-              // Gọi API thay đổi mật khẩu và xử lý kết quả
+
               const changePassword = {
                   newPassword: values.newPassword,
                   confirmPassword: values.confirmPassword,
               };
               
               const response = await verifyOtpAndChangePassword(values.email, values.otp, changePassword);
-  
-              // Kiểm tra phản hồi từ API
+
               if (response && response.status === 200) {
                   toast.success("Password changed successfully!");
-                  onClose(); // Đóng form sau khi thành công
+                  onClose();
               } else {
-                  // Nếu phản hồi không phải là 200, hiển thị thông báo lỗi
                   toast.error("Failed to change password.");
               }
           }

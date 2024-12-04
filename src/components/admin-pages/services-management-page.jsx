@@ -99,12 +99,12 @@ const ServicesManagement = () => {
       const result = await deleteService(serviceToDelete.id);
       if (result.success) {
         showNotification(result.message, "success");
-        fetchServices(); // Cập nhật lại danh sách dịch vụ
+        fetchServices();
       } else {
-        throw new Error(result.message || "Không thể xóa dịch vụ");
+        throw new Error(result.message || "Unable to delete service");
       }
     } catch (error) {
-      console.error("Lỗi khi xóa dịch vụ:", error);
+      console.error("Error deleting a service:", error);
       showNotification(error.message, "error");
     } finally {
       setIsDeleteDialogOpen(false);
@@ -190,34 +190,41 @@ const ServicesManagement = () => {
           </TableHeader>
           <TableBody>
             {services.map((service) => (
-              <TableRow key={service.id}>
+              <TableRow
+                  key={service.id}
+                  className={service.deletedAt ? 'line-through opacity-50' : ''}
+              >
                 <TableCell>{service.id}</TableCell>
                 <TableCell>{service.serviceName}</TableCell>
                 <TableCell>{service.description}</TableCell>
                 <TableCell>${service.price}</TableCell>
                 <TableCell>
                 <div className="flex justify-stretch gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleEditService(service)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      className="h-8 w-8 p-0"
-                      onClick={() => {
-                        setServiceToDelete(service);
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete</span>
-                    </Button>
+                  {!service.deletedAt && (
+                      <>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditService(service)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setServiceToDelete(service);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </>
+                  )}
                   </div>
                 </TableCell>
               </TableRow>
