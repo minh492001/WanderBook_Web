@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import '../styles/booking-page.css'
+import { getRoomTypes ,getAllBranches } from '../utils/ApiFunctions.js';
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -21,23 +22,46 @@ const BookingPage = () => {
 
   const totalGuests = bookingData.adults + bookingData.children
 
-
-  // Fetch dữ liệu khi component mount
   useEffect(() => {
-    // Fetch branches
-    fetch('/api/branches')
-        .then(response => response.json())
-        .then(data => {
-          console.log('Dữ liệu trả về từ API:', data);
-          if (Array.isArray(data)) {
-            setBranches(data);
-          } else {
-            console.error('Expected an array of branches');
-            setBranches([]);
-          }
-        })
-        .catch(error => console.error('Error fetching branches:', error));
+    const fetchBranches = async () => {
+      try {
+        const data = await getAllBranches();  // Gọi hàm getAllBranches
+        if (Array.isArray(data)) {
+          setBranches(data);  // Cập nhật state với dữ liệu branches
+        } else {
+          console.error('Expected an array of branches');
+          setBranches([]);  // Nếu không phải array, set branches là mảng rỗng
+        }
+      } catch (error) {
+        console.error('Error fetching branches:', error);
+        setBranches([]);  // Nếu có lỗi, set branches là mảng rỗng
+      }
+    };
+
+    fetchBranches();  // Gọi hàm fetch khi component mount
+  }, []); // Chạy lần đầu khi component mount
+
+
+  useEffect(() => {
+    const fetchRoomTypes = async () => {
+      try {
+        const data = await getRoomTypes();  // Gọi hàm fetch dữ liệu loại phòng
+        if (Array.isArray(data)) {
+          setRoomTypes(data);  // Cập nhật state với dữ liệu loại phòng
+        } else {
+          console.error('Expected an array of room types');
+          setRoomTypes([]);  // Nếu dữ liệu không phải là mảng, set mảng rỗng
+        }
+      } catch (error) {
+        console.error('Error fetching room types:', error);
+        setRoomTypes([]);  // Nếu có lỗi, set mảng rỗng
+      }
+    };
+
+    fetchRoomTypes();  // Gọi hàm fetch khi component mount
   }, []);
+
+
 
   const handleIncrement = (field) => {
     setBookingData((prev) => ({
@@ -257,7 +281,9 @@ const BookingPage = () => {
                     >
                       <option value="">Select a branch</option>
                       {branches.map((branch) => (
-                          <option key={branch} value={branch}>{branch}</option>
+                          <option key={branch.id} value={branch.branchName}>
+                            {branch.branchName}
+                          </option>
                       ))}
                     </select>
                   </div>
@@ -275,10 +301,14 @@ const BookingPage = () => {
                         required
                     >
                       <option value="">Select a room type</option>
-                      {roomTypes.map((type) => (
-                          <option key={type} value={type}>{type}</option>
+                      {roomTypes.map((roomType) => (
+                          <option key={roomType} value={roomType}>
+                            {roomType} {/* Hiển thị tên loại phòng */}
+                          </option>
                       ))}
                     </select>
+
+
                   </div>
                 </div>
               </div>
