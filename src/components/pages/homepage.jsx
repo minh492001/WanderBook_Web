@@ -75,28 +75,28 @@ const HomePage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
   }
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const data = await getAllRoomsWithFutureBookings(); // Call API function
-        setRooms(data); // Cập nhật state với dữ liệu từ API
-        setLoading(false);
-      } catch (err) {
-        setError(err.message); // Lưu lỗi (nếu có)
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // useEffect(() => {
+  //   const fetchRooms = async () => {
+  //     try {
+  //       const data = await getAllRoomsWithFutureBookings(); // Call API function
+  //       setRooms(data); // Cập nhật state với dữ liệu từ API
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError(err.message); // Lưu lỗi (nếu có)
+  //       setLoading(false);
+  //     }
+  //   };
+  //
+  //   fetchRooms();
+  // }, []);
+  //
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
+  //
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50">
