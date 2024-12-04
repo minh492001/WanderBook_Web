@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Users, IceCream, DollarSign } from 'lucide-react'
 import Navbar from './navbar';
 import Footer from './footer';
-import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
+// import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
+import { getAllBranches } from '../utils/ApiFunctions.js';
 
 import '../styles/home-page.css';
 
@@ -12,6 +13,7 @@ const HomePage = () => {
   const [isVisible, setIsVisible] = useState({})
   const [animationStep, setAnimationStep] = useState(0)
   const [rooms, setRooms] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const images = [
@@ -20,12 +22,21 @@ const HomePage = () => {
     'https://ik.imagekit.io/0ofixtqpt/hotel-3.jpg?updatedAt=1685544839496'
   ]
 
-  const branches = [
-    { name: 'Ha Noi', image: 'https://ik.imagekit.io/0ofixtqpt/hanoi.jpg?updatedAt=1685544839000' },
-    { name: 'Ho Chi Minh City', image: 'https://ik.imagekit.io/0ofixtqpt/hcmc.jpg?updatedAt=1685544839100' },
-    { name: 'Da Nang', image: 'https://ik.imagekit.io/0ofixtqpt/danang.jpg?updatedAt=1685544839200' },
-    { name: 'Nha Trang', image: 'https://ik.imagekit.io/0ofixtqpt/nhatrang.jpg?updatedAt=1685544839300' },
-  ]
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await getAllBranches();
+        setBranches(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBranches();
+  }, []);
+
 
   const salesData = [
     { year: 1950, scoops: '100k', years: 1, customers: 1000 },
@@ -75,28 +86,28 @@ const HomePage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
   }
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const data = await getAllRoomsWithFutureBookings(); // Call API function
-        setRooms(data); // Cập nhật state với dữ liệu từ API
-        setLoading(false);
-      } catch (err) {
-        setError(err.message); // Lưu lỗi (nếu có)
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // useEffect(() => {
+  //   const fetchRooms = async () => {
+  //     try {
+  //       const data = await getAllRoomsWithFutureBookings(); // Call API function
+  //       setRooms(data); // Cập nhật state với dữ liệu từ API
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError(err.message); // Lưu lỗi (nếu có)
+  //       setLoading(false);
+  //     }
+  //   };
+  //
+  //   fetchRooms();
+  // }, []);
+  //
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
+  //
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,38 +158,59 @@ const HomePage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section id="branches"
-                 className={`mb-16 scroll-mt-20 transition-all duration-1000 ${isVisible.branches ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="branches" className="mb-16 scroll-mt-20">
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Our Exquisite Locations</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {branches.map((branch) => (
-                <div key={branch.name} className="relative overflow-hidden rounded-lg shadow-lg branch-card group">
-                  <img className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                       src={branch.image} alt={branch.name}/>
-                  <div
-                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`}
-                          className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
-                      Explore {branch.name}
-                    </Link>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <h3 className="font-bold text-xl mb-2">{branch.name}</h3>
-                  </div>
-                </div>
-            ))}
-          </div>
+
+          {loading ? (
+              <p className="text-center text-gray-500">Loading branches...</p>
+          ) : error ? (
+              <p className="text-center text-red-500">{error}</p>
+          ) : branches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {branches.map((branch) => (
+                    <div
+                        key={branch.id}
+                        className="relative overflow-hidden rounded-lg shadow-lg branch-card group"
+                    >
+                      <img
+                          className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          src={branch.image || "/default-placeholder.jpg"}
+                          alt={branch.branchName || "Branch Image"}
+                      />
+                      <div
+                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      >
+                        <Link
+                            to={`/branch/${branch.id}`}
+                            className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300"
+                        >
+                          Explore {branch.branchName || "Branch"}
+                        </Link>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50 text-white">
+                        <h3 className="font-bold text-xl mb-2">{branch.branchName || "Unnamed Branch"}</h3>
+                        <p className="text-sm">{branch.city || "Unknown City"}</p>
+                      </div>
+                    </div>
+                ))}
+              </div>
+          ) : (
+              <p className="text-center text-gray-500">No branches available at the moment.</p>
+          )}
         </section>
 
         <section id="featured-rooms" className="mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Featured Accommodations</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {rooms.map((room) => (
-                <div key={room.id} className="bg-white shadow-xl rounded-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
+                <div key={room.id}
+                     className="bg-white shadow-xl rounded-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
                   <div className="relative">
-                    <img className="h-64 w-full object-cover" src={room.photo} alt={room.roomType} />
-                    <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                      <Link to={`/room/${room.id}`} className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
+                    <img className="h-64 w-full object-cover" src={room.photo} alt={room.roomType}/>
+                    <div
+                        className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                      <Link to={`/room/${room.id}`}
+                            className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
                         View Details
                       </Link>
                     </div>
@@ -187,7 +219,7 @@ const HomePage = () => {
                     <h3 className="font-bold text-2xl mb-2">{room.roomType}</h3>
                     <div className="flex items-center mb-2">
                       {[...Array(room.rating)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 text-yellow-400" />
+                          <Star key={i} className="h-5 w-5 text-yellow-400"/>
                       ))}
                     </div>
                     <p className="text-gray-600 text-sm mb-4">{room.description}</p>
@@ -352,15 +384,18 @@ const HomePage = () => {
             <div>
               <h3 className="font-bold text-xl mb-4 text-blue-600">Our Locations</h3>
               <ul className="space-y-2">
-                {branches.map((branch) => (
-                    <li key={branch.name}>
-                      <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`}
-                            className="text-gray-600 hover:text-blue-600 transition-colors duration-300">
-                        {branch.name}
+                {branches.map((branch, index) => (
+                    <li key={branch.id || index}> {/* Sử dụng branch.id nếu có, nếu không dùng index làm key */}
+                      <Link
+                          to={`/branch/${branch.name ? branch.name.toLowerCase().replace(/ /g, '-') : ''}`}
+                          className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+                      >
+                        {branch.name || 'Unnamed Branch'} {/* Hiển thị 'Unnamed Branch' nếu branch.name không có giá trị */}
                       </Link>
                     </li>
                 ))}
               </ul>
+
             </div>
             <div>
               <h3 className="font-bold text-xl mb-4 text-blue-600">Guest Services</h3>
