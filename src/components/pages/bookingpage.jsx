@@ -61,6 +61,39 @@ const BookingPage = () => {
     fetchRoomTypes();  // Gọi hàm fetch khi component mount
   }, []);
 
+  const submitBooking = async () => {
+    if (validateForm()) {
+      try {
+        const response = await fetch('/api/bookings/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${yourAuthToken}`, // Nếu cần xác thực bằng JWT
+          },
+          body: JSON.stringify({
+            checkInDate: bookingData.checkInDate,
+            checkOutDate: bookingData.checkOutDate,
+            adults: bookingData.adults,
+            children: bookingData.children,
+            branch: bookingData.branch,
+            roomType: bookingData.roomType,
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert('Booking created successfully!');
+          console.log(data); // Để xử lý kết quả booking tạo thành công
+        } else {
+          const errorData = await response.json();
+          alert('Error creating booking: ' + errorData.message);
+        }
+      } catch (error) {
+        console.error('Error during booking:', error);
+        alert('An error occurred while creating the booking');
+      }
+    }
+  };
 
 
   const handleIncrement = (field) => {
