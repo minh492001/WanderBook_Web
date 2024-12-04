@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo, useEffect} from 'react';
 import { Bed, Wifi, Coffee, Bath, Search, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
 
 const Card = ({ children, className }) => (
     <motion.div
@@ -42,10 +43,13 @@ const Select = ({ options, value, onChange, className }) => (
 );
 
 const RoomPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [selectedBranch, setSelectedBranch] = useState('all');
-  const navigate = useNavigate();
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOrder, setSortOrder] = useState('asc');
+    const [selectedBranch, setSelectedBranch] = useState('all');
+    const navigate = useNavigate();
 
   // Cập nhật hàm kiểm tra đăng nhập để sử dụng token
   const isLoggedIn = () => {
@@ -55,51 +59,45 @@ const RoomPage = () => {
 
   const handleBookNow = () => {
     if (isLoggedIn()) {
-      // Nếu đã đăng nhập, chuyển đến trang đặt phòng
       navigate('/booking');
     } else {
-      // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
       navigate('/login', { state: { from: '/rooms' } });
     }
   };
 
-  const rooms = [
-    {
-      name: "Deluxe King Room",
-      description: "Spacious room with a king-size bed and city view",
-      price: 250,
-      image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      amenities: ["King Bed", "Free Wi-Fi", "Coffee Maker", "En-suite Bathroom"],
-      branch: "Downtown"
-    },
-    {
-      name: "Ocean View Suite",
-      description: "Luxurious suite with panoramic ocean views",
-      price: 450,
-      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      amenities: ["King Bed", "Free Wi-Fi", "Mini Bar", "Jacuzzi"],
-      branch: "Beachfront"
-    },
-    {
-      name: "Family Room",
-      description: "Perfect for families, with two queen beds",
-      price: 350,
-      image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2057&q=80",
-      amenities: ["2 Queen Beds", "Free Wi-Fi", "Kids Play Area", "Kitchenette"],
-      branch: "Suburban"
-    }
-  ];
+  useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const data = await getAllRoomsWithFutureBookings(); // Call API function
+                setRooms(data); // Cập nhật state với dữ liệu từ API
+                setLoading(false);
+            } catch (err) {
+                setError(err.message); // Lưu lỗi (nếu có)
+                setLoading(false);
+            }
+        };
 
-  const filteredAndSortedRooms = useMemo(() => {
-    return rooms
-        .filter((room) =>
-            room.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            (selectedBranch === 'all' || room.branch === selectedBranch)
-        )
-        .sort((a, b) =>
-            sortOrder === 'asc' ? a.price - b.price : b.price - a.price
-        );
-  }, [searchTerm, sortOrder, selectedBranch]);
+        fetchRooms();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+  // const filteredAndSortedRooms = useMemo(() => {
+  //     return rooms
+  //         .filter((room) =>
+  //             room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //             (selectedBranch === 'all' || room.branch === selectedBranch)
+  //         )
+  //         .sort((a, b) =>
+  //             sortOrder === 'asc' ? a.pricePerNight - b.pricePerNight : b.pricePerNight - a.pricePerNight
+  //         );
+  // }, [searchTerm, sortOrder, selectedBranch]);
 
   const branches = ['all', ...new Set(rooms.map(room => room.branch))];
 
@@ -143,27 +141,27 @@ const RoomPage = () => {
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredAndSortedRooms.map((room, index) => (
-              <Card key={index}>
+          {rooms.map((room) => (
+              <Card key={room.id}>
                 <img
-                    src={room.image}
-                    alt={room.name}
+                    src={room.photo}
+                    alt={room.roomType}
                     className="w-full h-64 object-cover"
                 />
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-2 text-gray-800">{room.name}</h2>
+                  <h2 className="text-2xl font-bold mb-2 text-gray-800">{room.roomType}</h2>
                   <p className="text-gray-600 mb-4">{room.description}</p>
-                  <p className="text-3xl font-bold mb-4 text-blue-600">${room.price} <span className="text-sm font-normal text-gray-500">/ night</span></p>
+                  <p className="text-3xl font-bold mb-4 text-blue-600">${room.pricePerNight} <span className="text-sm font-normal text-gray-500">/ night</span></p>
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {room.amenities.map((amenity, i) => (
-                        <span key={i} className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center">
-                    {amenity === "King Bed" || amenity === "2 Queen Beds" ? <Bed className="inline mr-1 h-4 w-4" /> :
-                        amenity === "Free Wi-Fi" ? <Wifi className="inline mr-1 h-4 w-4" /> :
-                            amenity === "Coffee Maker" || amenity === "Mini Bar" ? <Coffee className="inline mr-1 h-4 w-4" /> :
-                                amenity === "En-suite Bathroom" || amenity === "Jacuzzi" ? <Bath className="inline mr-1 h-4 w-4" /> : null}
-                          {amenity}
-                  </span>
-                    ))}
+                  {/*  {rooms.service.map((amenity, i) => (*/}
+                  {/*      <span key={i} className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center">*/}
+                  {/*  {amenity === "King Bed" || amenity === "2 Queen Beds" ? <Bed className="inline mr-1 h-4 w-4" /> :*/}
+                  {/*      amenity === "Free Wi-Fi" ? <Wifi className="inline mr-1 h-4 w-4" /> :*/}
+                  {/*          amenity === "Coffee Maker" || amenity === "Mini Bar" ? <Coffee className="inline mr-1 h-4 w-4" /> :*/}
+                  {/*              amenity === "En-suite Bathroom" || amenity === "Jacuzzi" ? <Bath className="inline mr-1 h-4 w-4" /> : null}*/}
+                  {/*        {amenity}*/}
+                  {/*</span>*/}
+                  {/*  ))}*/}
                   </div>
                   <Button className="w-full text-lg" onClick={handleBookNow}>Book Now</Button>
                 </div>
