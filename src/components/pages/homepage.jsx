@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Calendar, Users, MapPin, IceCream, Award, UserCheck, DollarSign } from 'lucide-react'
+import { Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Users, IceCream, DollarSign } from 'lucide-react'
 import Navbar from './navbar';
 import Footer from './footer';
+import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
+
 import '../styles/home-page.css';
 
 const HomePage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isVisible, setIsVisible] = useState({})
   const [animationStep, setAnimationStep] = useState(0)
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const images = [
     'https://ik.imagekit.io/0ofixtqpt/hotel-1.jpg?updatedAt=1685544839614',
     'https://ik.imagekit.io/0ofixtqpt/hotel-2.jpg?updatedAt=1685544839738',
@@ -70,6 +75,29 @@ const HomePage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
   }
 
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const data = await getAllRoomsWithFutureBookings(); // Call API function
+        setRooms(data); // Cập nhật state với dữ liệu từ API
+        setLoading(false);
+      } catch (err) {
+        setError(err.message); // Lưu lỗi (nếu có)
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -119,219 +147,260 @@ const HomePage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section id="branches" className={`mb-16 scroll-mt-20 transition-all duration-1000 ${isVisible.branches ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="branches"
+                 className={`mb-16 scroll-mt-20 transition-all duration-1000 ${isVisible.branches ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Our Exquisite Locations</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {branches.map((branch) => (
-              <div key={branch.name} className="relative overflow-hidden rounded-lg shadow-lg branch-card group">
-                <img className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110" src={branch.image} alt={branch.name} />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`} className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
-                    Explore {branch.name}
-                  </Link>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <h3 className="font-bold text-xl mb-2">{branch.name}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="featured-rooms" className={`mb-16 transition-all duration-1000 ${isVisible['featured-rooms'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Featured Accommodations</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { name: 'Deluxe Suite', image: 'https://ik.imagekit.io/0ofixtqpt/room-1.jpg?updatedAt=1685544839372' },
-              { name: 'Ocean View Room', image: 'https://ik.imagekit.io/0ofixtqpt/room-2.jpg?updatedAt=1685544839399' },
-              { name: 'Family Suite', image: 'https://ik.imagekit.io/0ofixtqpt/room-3.jpg?updatedAt=1685544839516' },
-            ].map((room) => (
-              <div key={room.name} className="bg-white shadow-xl rounded-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
-                <div className="relative">
-                  <img className="h-64 w-full object-cover" src={room.image} alt={room.name} />
-                  <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                    <Link to="/booking" className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
-                      View Details
+                <div key={branch.name} className="relative overflow-hidden rounded-lg shadow-lg branch-card group">
+                  <img className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                       src={branch.image} alt={branch.name}/>
+                  <div
+                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`}
+                          className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
+                      Explore {branch.name}
                     </Link>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="font-bold text-2xl mb-2">{room.name}</h3>
-                  <div className="flex items-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400" />
-                    ))}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="font-bold text-xl mb-2">{branch.name}</h3>
                   </div>
-                  <p className="text-gray-600 text-sm mb-4">Experience Grand Lusso Hotel redefined in our meticulously designed accommodations.</p>
-                  <p className="text-blue-600 font-semibold text-lg">From $299/night</p>
                 </div>
-              </div>
             ))}
           </div>
         </section>
 
-        <section id="features" className={`mb-16 transition-all duration-1000 ${isVisible.features ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="featured-rooms" className="mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Featured Accommodations</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {rooms.map((room) => (
+                <div key={room.id} className="bg-white shadow-xl rounded-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
+                  <div className="relative">
+                    <img className="h-64 w-full object-cover" src={room.photo} alt={room.roomType} />
+                    <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                      <Link to={`/room/${room.id}`} className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300">
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-2xl mb-2">{room.roomType}</h3>
+                    <div className="flex items-center mb-2">
+                      {[...Array(room.rating)].map((_, i) => (
+                          <Star key={i} className="h-5 w-5 text-yellow-400" />
+                      ))}
+                    </div>
+                    <p className="text-gray-600 text-sm mb-4">{room.description}</p>
+                    <p className="text-blue-600 font-semibold text-lg">From ${room.pricePerNight}/night</p>
+                  </div>
+                </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="features"
+                 className={`mb-16 transition-all duration-1000 ${isVisible.features ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Unparalleled Amenities</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: Coffee, title: 'Premium Amenities', description: 'Indulge in our carefully curated selection of top-tier facilities.' },
-              { icon: Wifi, title: 'High-Speed Wi-Fi', description: 'Stay connected with complimentary high-speed internet access.' },
-              { icon: Utensils, title: 'Gourmet Dining', description: 'Savor exquisite culinary creations from world-renowned chefs.' },
-              { icon: Dumbbell, title: 'State-of-the-Art Fitness', description: 'Maintain your regimen in our cutting-edge fitness center.' },
+              {
+                icon: Coffee,
+                title: 'Premium Amenities',
+                description: 'Indulge in our carefully curated selection of top-tier facilities.'
+              },
+              {
+                icon: Wifi,
+                title: 'High-Speed Wi-Fi',
+                description: 'Stay connected with complimentary high-speed internet access.'
+              },
+              {
+                icon: Utensils,
+                title: 'Gourmet Dining',
+                description: 'Savor exquisite culinary creations from world-renowned chefs.'
+              },
+              {
+                icon: Dumbbell,
+                title: 'State-of-the-Art Fitness',
+                description: 'Maintain your regimen in our cutting-edge fitness center.'
+              },
             ].map((feature) => (
-              <div key={feature.title} className="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
-                <feature.icon className="h-12 w-12 text-blue-600 mb-4 feature-icon" />
-                <h3 className="font-bold text-xl mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
-              </div>
+                <div key={feature.title}
+                     className="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  <feature.icon className="h-12 w-12 text-blue-600 mb-4 feature-icon"/>
+                  <h3 className="font-bold text-xl mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                </div>
             ))}
           </div>
         </section>
 
-        <section id="ice-cream-history" className={`max-w-6xl mx-auto px-4 py-16 transition-all duration-1000 ${isVisible['ice-cream-history'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="ice-cream-section">
-          <img 
-            src="https://ik.imagekit.io/0ofixtqpt/ice-cream-history.jpg?updatedAt=1685544839800" 
-            alt="Vintage ice cream parlor" 
-            className="ice-cream-image"
-          />
-          <div className="p-8">
-            <h2 className="text-4xl font-bold text-white mb-4">A Scoop of History: Our Ice Cream Journey</h2>
-            <p className="text-white text-lg mb-8">
-              Since 1950, Luxury Stays has been delighting guests with our signature ice cream. What started as a small parlor in Ha Noi has grown into a beloved tradition across all our locations. Our secret? A perfect blend of premium ingredients and a dash of nostalgia in every scoop.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="stat-card p-6">
-                <IceCream className="h-12 w-12 text-yellow-400 mb-4 floating-icon" />
-                <h3 className="text-2xl font-semibold mb-2">Ice Cream Scoops</h3>
-                <p className="text-4xl font-bold text-yellow-500">{salesData[animationStep].scoops}</p>
-                <p className="text-gray-600">Served in {salesData[animationStep].year}</p>
-              </div>
-              <div className="stat-card p-6">
-                <DollarSign className="h-12 w-12 text-green-400 mb-4 floating-icon" />
-                <h3 className="text-2xl font-semibold mb-2">Annual Revenue</h3>
-                <p className="text-4xl font-bold text-green-500">{salesData[animationStep].revenue}</p>
-                <p className="text-gray-600">Generated in {salesData[animationStep].year}</p>
-              </div>
-              <div className="stat-card p-6">
-                <Users className="h-12 w-12 text-blue-400 mb-4 floating-icon" />
-                <h3 className="text-2xl font-semibold mb-2">Happy Customers</h3>
-                <p className="text-4xl font-bold text-blue-500">{salesData[animationStep].customers.toLocaleString()}</p>
-                <p className="text-gray-600">Served by {salesData[animationStep].year}</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="text-2xl font-semibold mb-4">Our Sweet Growth</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Ice Cream Scoops</span>
-                    <span className="font-semibold">{salesData[animationStep].scoops}</span>
-                  </div>
-                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-yellow-400 rounded-full transition-all duration-500 ease-in-out"
-                      style={{ width: `${(animationStep + 1) * 25}%` }}
-                    ></div>
-                  </div>
+        <section id="ice-cream-history"
+                 className={`max-w-6xl mx-auto px-4 py-16 transition-all duration-1000 ${isVisible['ice-cream-history'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="ice-cream-section">
+            <img
+                src="https://ik.imagekit.io/0ofixtqpt/ice-cream-history.jpg?updatedAt=1685544839800"
+                alt="Vintage ice cream parlor"
+                className="ice-cream-image"
+            />
+            <div className="p-8">
+              <h2 className="text-4xl font-bold text-white mb-4">A Scoop of History: Our Ice Cream Journey</h2>
+              <p className="text-white text-lg mb-8">
+                Since 1950, Luxury Stays has been delighting guests with our signature ice cream. What started as a
+                small parlor in Ha Noi has grown into a beloved tradition across all our locations. Our secret? A
+                perfect blend of premium ingredients and a dash of nostalgia in every scoop.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="stat-card p-6">
+                  <IceCream className="h-12 w-12 text-yellow-400 mb-4 floating-icon"/>
+                  <h3 className="text-2xl font-semibold mb-2">Ice Cream Scoops</h3>
+                  <p className="text-4xl font-bold text-yellow-500">{salesData[animationStep].scoops}</p>
+                  <p className="text-gray-600">Served in {salesData[animationStep].year}</p>
                 </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Annual Revenue</span>
-                    <span className="font-semibold">{salesData[animationStep].revenue}</span>
-                  </div>
-                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-green-400 rounded-full transition-all duration-500 ease-in-out"
-                      style={{ width: `${(animationStep + 1) * 25}%` }}
-                    ></div>
-                  </div>
+                <div className="stat-card p-6">
+                  <DollarSign className="h-12 w-12 text-green-400 mb-4 floating-icon"/>
+                  <h3 className="text-2xl font-semibold mb-2">Annual Revenue</h3>
+                  <p className="text-4xl font-bold text-green-500">{salesData[animationStep].revenue}</p>
+                  <p className="text-gray-600">Generated in {salesData[animationStep].year}</p>
                 </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Happy Customers</span>
-                    <span className="font-semibold">{salesData[animationStep].customers.toLocaleString()}</span>
+                <div className="stat-card p-6">
+                  <Users className="h-12 w-12 text-blue-400 mb-4 floating-icon"/>
+                  <h3 className="text-2xl font-semibold mb-2">Happy Customers</h3>
+                  <p className="text-4xl font-bold text-blue-500">{salesData[animationStep].customers.toLocaleString()}</p>
+                  <p className="text-gray-600">Served by {salesData[animationStep].year}</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg p-6">
+                <h3 className="text-2xl font-semibold mb-4">Our Sweet Growth</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Ice Cream Scoops</span>
+                      <span className="font-semibold">{salesData[animationStep].scoops}</span>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                          className="h-full bg-yellow-400 rounded-full transition-all duration-500 ease-in-out"
+                          style={{width: `${(animationStep + 1) * 25}%`}}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-400 rounded-full transition-all duration-500 ease-in-out"
-                      style={{ width: `${(animationStep + 1) * 25}%` }}
-                    ></div>
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Annual Revenue</span>
+                      <span className="font-semibold">{salesData[animationStep].revenue}</span>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                          className="h-full bg-green-400 rounded-full transition-all duration-500 ease-in-out"
+                          style={{width: `${(animationStep + 1) * 25}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Happy Customers</span>
+                      <span className="font-semibold">{salesData[animationStep].customers.toLocaleString()}</span>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                          className="h-full bg-blue-400 rounded-full transition-all duration-500 ease-in-out"
+                          style={{width: `${(animationStep + 1) * 25}%`}}
+                      ></div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-        <section id="map" className={`mb-16 transition-all duration-1000 ${isVisible.map ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="map"
+                 className={`mb-16 transition-all duration-1000 ${isVisible.map ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Our Prime Location</h2>
           <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-lg">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0968023192!2d105.84774731476343!3d21.028811785994613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab9bd9861ca1%3A0xe7887f7b72ca17a9!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1623159856186!5m2!1sen!2s"
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              title="Luxury Stays Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0968023192!2d105.84774731476343!3d21.028811785994613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab9bd9861ca1%3A0xe7887f7b72ca17a9!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1623159856186!5m2!1sen!2s"
+                width="100%"
+                height="450"
+                style={{border: 0}}
+                allowFullScreen=""
+                loading="lazy"
+                title="Luxury Stays Location"
             ></iframe>
           </div>
         </section>
 
-        <section id="sitemap" className={`mb-16 transition-all duration-1000 ${isVisible.sitemap ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="sitemap"
+                 className={`mb-16 transition-all duration-1000 ${isVisible.sitemap ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Explore Our World</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
               <h3 className="font-bold text-xl mb-4 text-blue-600">Main Pages</h3>
               <ul className="space-y-2">
-                <li><Link to="/" className="text-gray-600  hover:text-blue-600 transition-colors duration-300">Home</Link></li>
-                <li><Link to="/rooms" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Accommodations</Link></li>
-                <li><Link to="/restaurant" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Dining Experiences</Link></li>
-                <li><Link to="/amenities-and-services" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Amenities & Services</Link></li>
+                <li><Link to="/"
+                          className="text-gray-600  hover:text-blue-600 transition-colors duration-300">Home</Link></li>
+                <li><Link to="/rooms"
+                          className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Accommodations</Link>
+                </li>
+                <li><Link to="/restaurant" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Dining
+                  Experiences</Link></li>
+                <li><Link to="/amenities-and-services"
+                          className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Amenities &
+                  Services</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold text-xl mb-4 text-blue-600">Our Locations</h3>
               <ul className="space-y-2">
                 {branches.map((branch) => (
-                  <li key={branch.name}>
-                    <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`} className="text-gray-600 hover:text-blue-600 transition-colors duration-300">
-                      {branch.name}
-                    </Link>
-                  </li>
+                    <li key={branch.name}>
+                      <Link to={`/branch/${branch.name.toLowerCase().replace(' ', '-')}`}
+                            className="text-gray-600 hover:text-blue-600 transition-colors duration-300">
+                        {branch.name}
+                      </Link>
+                    </li>
                 ))}
               </ul>
             </div>
             <div>
               <h3 className="font-bold text-xl mb-4 text-blue-600">Guest Services</h3>
               <ul className="space-y-2">
-                <li><Link to="/booking" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Reserve Your Stay</Link></li>
-                <li><Link to="/special-offers" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Exclusive Offers</Link></li>
-                <li><Link to="/faq" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Frequently Asked Questions</Link></li>
-                <li><Link to="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Contact Concierge</Link></li>
+                <li><Link to="/booking" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Reserve
+                  Your Stay</Link></li>
+                <li><Link to="/special-offers"
+                          className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Exclusive
+                  Offers</Link></li>
+                <li><Link to="/faq" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Frequently
+                  Asked Questions</Link></li>
+                <li><Link to="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Contact
+                  Concierge</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-xl mb-4 text-blue-600">About Luxury Stays</h3>
+              <h3 className="font-bold text-xl mb-4 text-blue-600">About Us</h3>
               <ul className="space-y-2">
-                <li><Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Our Legacy</Link></li>
-                <li><Link to="/careers" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Join Our Team</Link></li>
-                <li><Link to="/press" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Press & Media</Link></li>
-                <li><Link to="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Privacy & Terms</Link></li>
+                <li><Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Our
+                  Legacy</Link></li>
+                <li><Link to="/careers" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Join
+                  Our Team</Link></li>
+                <li><Link to="/press" className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Press
+                  & Media</Link></li>
+                <li><Link to="/privacy-policy"
+                          className="text-gray-600 hover:text-blue-600 transition-colors duration-300">Privacy &
+                  Terms</Link></li>
               </ul>
             </div>
           </div>
         </section>
 
-        <section id="cta" className={`bg-blue-600 text-white py-16 px-4 rounded-lg transition-all duration-1000 ${isVisible.cta ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <section id="cta"
+                 className={`bg-blue-600 text-white py-16 px-4 rounded-lg transition-all duration-1000 ${isVisible.cta ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-4xl font-bold mb-4">Elevate Your Stay with Luxury</h2>
             <p className="text-xl mb-8">Immerse yourself in opulence and create unforgettable memories.</p>
             <Link
-              to="/booking"
-              className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:shadow-lg inline-block cta-button"
+                to="/booking"
+                className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:shadow-lg inline-block cta-button"
             >
               Begin Your Luxurious Journey
             </Link>
@@ -339,7 +408,7 @@ const HomePage = () => {
         </section>
       </main>
 
-      <Footer />
+      <Footer/>
     </div>
   )
 }
