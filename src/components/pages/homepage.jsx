@@ -5,7 +5,6 @@ import Navbar from './navbar';
 import Footer from './footer';
 import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
 import { getAllBranches } from '../utils/ApiFunctions.js';
-
 import '../styles/home-page.css';
 
 const HomePage = () => {
@@ -101,13 +100,7 @@ const HomePage = () => {
     fetchRooms();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
