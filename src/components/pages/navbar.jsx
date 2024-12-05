@@ -38,6 +38,7 @@ const Navbar = () => {
   }, [])
 
   const handleLogout = () => {
+    sessionStorage.removeItem('id')
     sessionStorage.removeItem('email')
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('role')

@@ -1,7 +1,7 @@
-import {React, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Button } from "@radix-ui/themes";
+import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import {
   updateRoom,
   deleteRoom,
   getRoomTypes,
-    getAllBranches
+  getAllBranches
 } from '../utils/ApiFunctions';
 
 const RoomsManagement = () => {
@@ -197,7 +197,10 @@ const handleFileUpload = (file) => {
             </TableHeader>
             <TableBody>
         {rooms.map((room) => (
-          <TableRow key={room.id}>
+          <TableRow
+              key={room.id}
+              className={room.deletedAt ? 'line-through opacity-50' : ''}
+          >
             <TableCell>{room.id}</TableCell>
             <TableCell>{room.roomNumber}</TableCell> 
             <TableCell>${room.pricePerNight !== null ? room.pricePerNight : 'N/A'}</TableCell> 
@@ -218,13 +221,29 @@ const handleFileUpload = (file) => {
             </TableCell>
             <TableCell>{room.description}</TableCell>
             <TableCell>
-                <div className="flex space-x-2">
-                    <Button variant="outline" size="icon" onClick={() => openDialog(room)}>
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleDeleteRoom(room.id)}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                <div className="flex justify-stretch gap-2">
+                    {!room.deletedAt && (
+                      <>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 p-0"
+                              onClick={() => openDialog(room)}
+                          >
+                              <Pencil className="h-4 w-4"/>
+                              <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDeleteRoom(room.id)}
+                          >
+                              <Trash2 className="h-4 w-4"/>
+                              <span className="sr-only">Delete</span>
+                          </Button>
+                      </>
+                    )}
                 </div>
             </TableCell>
           </TableRow>
