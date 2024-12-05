@@ -26,19 +26,18 @@ const RoomsManagement = () => {
   const [branches, setBranches] = useState([]);
  
 
-  // Fetch data rooms.
+  // Fetch all rooms.
   useEffect(() => {
       const fetchData = async () => {
           setLoading(true);
           try {
-              const [roomsData, typesData, branchesData] = await Promise.all([
+              const [roomsData, typesData] = await Promise.all([
                   getAllRoomsWithFutureBookings(),
                   getRoomTypes(),
-                  getAllBranches()
+
               ]);
               setRooms(roomsData);
               setRoomTypes(typesData);
-              setBranches(branchesData);
 
           } catch (err) {
               setError('Failed to fetch data.');
@@ -52,43 +51,38 @@ const RoomsManagement = () => {
 
 
     // Handle Add or Update Room.
-    const handleSaveRoom = async () => {
-        try {
-            const roomData = {
-                branchId: Number(dialogData.data.branchId),
-                roomNumber: dialogData.data.roomNumber,
-                roomType: dialogData.data.roomType,
-                pricePerNight: Number(dialogData.data.pricePerNight),
-                maxOccupancy: Number(dialogData.data.maxOccupancy),
-                description: dialogData.data.description,
-                photo: dialogData.data.photo || null,
-            };
+  const handleSaveRoom = async () => {
+    try {
+        const roomData = {
+            branchId: dialogData.data.branchId,
+            roomNumber: dialogData.data.roomNumber,
+            roomType: dialogData.data.roomType,
+            pricePerNight: Number(dialogData.data.pricePerNight),
+            maxOccupancy: Number(dialogData.data.maxOccupancy),
+            description: dialogData.data.description,
+            photo: dialogData.data.photo || null
+        };
 
-            if (dialogData.editing) {
-                if (!dialogData.data.id) {
-                    throw new Error('Room ID is missing for update');
-                }
-                const updatedRoom = await updateRoom(dialogData.data.id, roomData);
-                setRooms((prevRooms) =>
-                    prevRooms.map((room) =>
-                        room.id === dialogData.data.id ? updatedRoom : room
-                    )
-                );
-                toast.success('Room updated successfully!');
-            } else {
-                const newRoom = await addNewRoom(roomData);
-                setRooms((prevRooms) => [...prevRooms, newRoom]);
-                toast.success('Room added successfully!');
+        if (dialogData.editing) {
+            if (!dialogData.data.id) {
+                throw new Error('Room ID is missing for update');
             }
-            closeDialog();
-        } catch (err) {
-            console.error('Error saving room:', err);
-            toast.error('Failed to save room.');
+            const updatedRoom = await updateRoom(dialogData.data.id, roomData);
+            setRooms((prevRooms) => prevRooms.map((room) => (room.id === dialogData.data.id ? updatedRoom : room)));
+            toast.success('Room updated successfully!');
+        } else {
+            const newRoom = await addNewRoom(roomData);
+            setRooms((prevRooms) => [...prevRooms, newRoom]);
+            toast.success('Room added successfully!');
         }
-    };
+        closeDialog();
+    } catch (err) {
+        console.error('Error saving room:', err);
+        toast.error('Failed to save room.');
+    }
+};
 
-
-    // Handle Delete Room.
+  // Handle Delete Room.
   const handleDeleteRoom = async (id) => {
     try {
       await deleteRoom(id);
@@ -155,6 +149,25 @@ const handleFileUpload = (file) => {
         reader.readAsDataURL(file);  // Chuyển file thành base64
     }
 };
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await getAllBranches();  // Gọi hàm getAllBranches
+        if (Array.isArray(data)) {
+          setBranches(data);  // Cập nhật state với dữ liệu branches
+        } else {
+          console.error('Expected an array of branches');
+          setBranches([]);  // Nếu không phải array, set branches là mảng rỗng
+        }
+      } catch (error) {
+        console.error('Error fetching branches:', error);
+        setBranches([]);  // Nếu có lỗi, set branches là mảng rỗng
+      }
+    };
+
+    fetchBranches();  // Gọi hàm fetch khi component mount
+  }, []); // Chạy lần đầu khi component mount
 
   return (
     <div className="space-y-6">
@@ -339,30 +352,35 @@ const handleFileUpload = (file) => {
 
                   <div className="grid grid-cols-4 items-center gap-4">
                       <Label className="text-right">Branch</Label>
-                      <Select
-                          value={dialogData.data.branchId}
-                          onValueChange={(value) =>
-                              setDialogData((prevData) => ({
-                                  ...prevData,
-                                  data: {...prevData.data, branchId: value},
-                              }))
-                          }
-                      >
-                          <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select branch"/>
-                          </SelectTrigger>
-                          <SelectContent>
-                              {Array.isArray(branches) && branches.length > 0 ? (
-                                  branches.map((branch) => (
-                                      <SelectItem key={branch.id} value={branch.id.toString()}>
-                                          {branch.branchName}
-                                      </SelectItem>
-                                  ))
-                              ) : (
-                                  <div>No branches available</div>
-                              )}
-                          </SelectContent>
-                      </Select>
+                    <Select
+                        value={dialogData.data.branchId?.toString() || ""} // Chuyển branchId sang chuỗi
+                        onValueChange={(value) =>
+                            setDialogData((prevData) => ({
+                              ...prevData,
+                              data: { ...prevData.data, branchId: parseInt(value) }, // Chuyển value về số
+                            }))
+                        }
+                    >
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue>
+                          {dialogData.data.branchId
+                              ? branches.find((branch) => branch.id === dialogData.data.branchId)?.branchName || "Select branch"
+                              : "Select branch"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {branches.length > 0 ? (
+                            branches.map((branch) => (
+                                <SelectItem key={branch.id} value={branch.id.toString()}>
+                                  {branch.branchName}
+                                </SelectItem>
+                            ))
+                        ) : (
+                            <p className="px-4 py-2 text-gray-500">No branches available</p>
+                        )}
+                      </SelectContent>
+                    </Select>
+
                   </div>
                   <Label>Room Image</Label>
                   <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e.target.files[0])}/>
