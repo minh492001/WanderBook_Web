@@ -351,37 +351,52 @@ const handleFileUpload = (file) => {
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                      <Label className="text-right">Branch</Label>
-                    <Select
-                        value={dialogData.data.branchId?.toString() || ""} // Chuyển branchId sang chuỗi
-                        onValueChange={(value) =>
-                            setDialogData((prevData) => ({
-                              ...prevData,
-                              data: { ...prevData.data, branchId: parseInt(value) }, // Chuyển value về số
-                            }))
-                        }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue>
-                          {dialogData.data.branchId
-                              ? branches.find((branch) => branch.id === dialogData.data.branchId)?.branchName || "Select branch"
-                              : "Select branch"}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {branches.length > 0 ? (
-                            branches.map((branch) => (
-                                <SelectItem key={branch.id} value={branch.id.toString()}>
-                                  {branch.branchName}
-                                </SelectItem>
-                            ))
-                        ) : (
-                            <p className="px-4 py-2 text-gray-500">No branches available</p>
-                        )}
-                      </SelectContent>
-                    </Select>
-
+                      <Label>Branch</Label>
+                      <Select
+                          value={dialogData.data.branchId?.toString() || ""} // Chuyển branchId sang chuỗi
+                          onValueChange={(value) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, branchId: parseInt(value)}, // Chuyển value về số
+                              }))
+                          }
+                      >
+                          <SelectTrigger className="col-span-3">
+                              <SelectValue>
+                                  {dialogData.data.branchId
+                                      ? branches.find((branch) => branch.id === dialogData.data.branchId)?.branchName || "Select branch"
+                                      : "Select branch"}
+                              </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                              {branches.length > 0 ? (
+                                  branches.map((branch) => (
+                                      <SelectItem key={branch.id} value={branch.id.toString()}>
+                                          {branch.branchName}
+                                      </SelectItem>
+                                  ))
+                              ) : (
+                                  <p className="px-4 py-2 text-gray-500">No branches available</p>
+                              )}
+                          </SelectContent>
+                      </Select>
                   </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label>Description</Label>
+                      <Textarea
+                          className="col-span-3"
+                          placeholder="Enter room description"
+                          value={dialogData.data.description}
+                          onChange={(e) =>
+                              setDialogData((prevData) => ({
+                                  ...prevData,
+                                  data: {...prevData.data, description: e.target.value},
+                              }))
+                          }
+                      />
+                  </div>
+
                   <Label>Room Image</Label>
                   <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e.target.files[0])}/>
               </div>
