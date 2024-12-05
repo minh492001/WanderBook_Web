@@ -1,0 +1,86 @@
+.slick-slide > div {
+    margin: 0 10px;
+}
+
+.slick-list {
+    margin: 0 -10px;
+}
+
+.custom-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    color: #3b82f6; /* Tailwind blue-500 */
+}
+
+.custom-arrow:hover {
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: #2563eb; /* Tailwind blue-600 */
+}
+
+.custom-arrow:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Tailwind blue-500 with opacity */
+}
+
+.custom-prev-arrow {
+    left: -24px;
+}
+
+.custom-next-arrow {
+    right: -24px;
+}
+
+@media (max-width: 1024px) {
+    .custom-prev-arrow {
+        left: 10px;
+    }
+    .custom-next-arrow {
+        right: 10px;
+    }
+}
+
+.branch-card-image {
+    transition: transform 0.3s ease-in-out;
+}
+
+.branch-card:hover .branch-card-image {
+    transform: scale(1.1);
+}
+
+.branch-card-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.branch-card:hover .branch-card-overlay {
+    opacity: 1;
+}
+
+.branch-card-info {
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.branch-card:hover .branch-card-info {
+    transform: translateY(0);
+}
+
+.explore-button {
+    transition: all 0.3s ease-in-out;
+}
+
+.explore-button:hover {
+    transform: scale(1.05);
+}
+
