@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, Users, IceCream, DollarSign } from 'lucide-react'
 import Navbar from './navbar';
 import Footer from './footer';
-// import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
+import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
 import { getAllBranches } from '../utils/ApiFunctions.js';
 
 import '../styles/home-page.css';
@@ -86,28 +86,28 @@ const HomePage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
   }
 
-  // useEffect(() => {
-  //   const fetchRooms = async () => {
-  //     try {
-  //       const data = await getAllRoomsWithFutureBookings(); // Call API function
-  //       setRooms(data); // Cập nhật state với dữ liệu từ API
-  //       setLoading(false);
-  //     } catch (err) {
-  //       setError(err.message); // Lưu lỗi (nếu có)
-  //       setLoading(false);
-  //     }
-  //   };
-  //
-  //   fetchRooms();
-  // }, []);
-  //
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
-  //
-  // if (error) {
-  //   return <div>Error: {error}</div>;
-  // }
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const data = await getAllRoomsWithFutureBookings(); // Call API function
+        setRooms(data); // Cập nhật state với dữ liệu từ API
+        setLoading(false);
+      } catch (err) {
+        setError(err.message); // Lưu lỗi (nếu có)
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

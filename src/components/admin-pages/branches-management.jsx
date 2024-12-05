@@ -25,7 +25,8 @@
   import { 
     getAllBranches, 
     addBranch, 
-    deleteBranch, 
+    deleteBranch,
+    updateBranch,
     getBranchById, 
     addServiceToBranch, 
     removeServiceFromBranch,
