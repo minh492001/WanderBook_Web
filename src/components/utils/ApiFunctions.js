@@ -150,7 +150,7 @@ export async function getRoomsByTypeAndPrice(roomType, minPrice, maxPrice) {
 
 export const getRoomTypes = async () => {
     try {
-        const response = await api.get(`/api/v2/rooms/room-types`, {
+        const response = await api.get(`/api/v2/enums/rooms/types`, {
             headers: getHeader()
         });
         return response.data; // Return list of rooms matching criteria
@@ -379,6 +379,22 @@ export async function deleteUserByEmail(email) {
 	  throw new Error("Error when adding new service");
 	}
   }
+
+export const updateBranch = async (id, branchData) => {
+	try {
+		// Gửi PUT request để cập nhật chi nhánh
+		const response = await api.put(`/api/v2/branches/${id}`, branchData, {
+			headers: getHeader(),
+		});
+
+		// Xử lý phản hồi nếu thành công
+		console.log('Updated branch:', response.data);
+		return response.data; // Trả về chi nhánh đã cập nhật
+	} catch (error) {
+		console.error('Error updating branch:', error.response ? error.response.data : error.message);
+		throw error; // Ném lỗi nếu có lỗi xảy ra
+	}
+};
 
   //Update or create new services(ADMIN only)
   export async function saveService(id, serviceEdit) {
