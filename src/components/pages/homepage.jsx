@@ -4,8 +4,8 @@ import { Star, Coffee, Wifi, Utensils, Dumbbell, ChevronLeft, ChevronRight, User
 import Navbar from './navbar';
 import Footer from './footer';
 import { getAllRoomsWithFutureBookings } from '../utils/ApiFunctions.js';
-import { getAllBranches } from '../utils/ApiFunctions.js';
 import '../styles/home-page.css';
+import BranchesSection from '../pages/branch-slider.jsx';
 
 const HomePage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -20,21 +20,6 @@ const HomePage = () => {
     'https://ik.imagekit.io/0ofixtqpt/hotel-2.jpg?updatedAt=1685544839738',
     'https://ik.imagekit.io/0ofixtqpt/hotel-3.jpg?updatedAt=1685544839496'
   ]
-
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const data = await getAllBranches();
-        setBranches(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBranches();
-  }, []);
 
 
   const salesData = [
@@ -151,46 +136,7 @@ const HomePage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section id="branches" className="mb-16 scroll-mt-20">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Our Exquisite Locations</h2>
-
-          {loading ? (
-              <p className="text-center text-gray-500">Loading branches...</p>
-          ) : error ? (
-              <p className="text-center text-red-500">{error}</p>
-          ) : branches.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {branches.map((branch) => (
-                    <div
-                        key={branch.id}
-                        className="relative overflow-hidden rounded-lg shadow-lg branch-card group"
-                    >
-                      <img
-                          className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          src={branch.image || "/default-placeholder.jpg"}
-                          alt={branch.branchName || "Branch Image"}
-                      />
-                      <div
-                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      >
-                        <Link
-                            to={`/branch/${branch.id}`}
-                            className="text-white text-lg font-semibold bg-blue-600 px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300"
-                        >
-                          Explore {branch.branchName || "Branch"}
-                        </Link>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50 text-white">
-                        <h3 className="font-bold text-xl mb-2">{branch.branchName || "Unnamed Branch"}</h3>
-                        <p className="text-sm">{branch.city || "Unknown City"}</p>
-                      </div>
-                    </div>
-                ))}
-              </div>
-          ) : (
-              <p className="text-center text-gray-500">No branches available at the moment.</p>
-          )}
-        </section>
+        <BranchesSection />
 
         <section id="featured-rooms" className="mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Featured Accommodations</h2>
