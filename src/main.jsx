@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { createRoot } from 'react-dom/client'
 import './index.css'
-// import { Route } from 'lucide-react'
 import HomePage from './components/pages/homepage.jsx';
 import BookingPage from './components/pages/bookingpage.jsx';
 import LoginPage from './components/auth/login-page.jsx';

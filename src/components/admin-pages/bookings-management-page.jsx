@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
@@ -21,42 +21,100 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-// Mock data for bookings
-const initialBookings = [
-  { id: 1, guestName: 'John Doe', roomNumber: '101', checkIn: '2023-06-01', checkOut: '2023-06-05', status: 'Confirmed' },
-  { id: 2, guestName: 'Jane Smith', roomNumber: '102', checkIn: '2023-06-03', checkOut: '2023-06-07', status: 'Checked In' },
-  { id: 3, guestName: 'Bob Johnson', roomNumber: '103', checkIn: '2023-06-05', checkOut:  '2023-06-10', status: 'Pending' },
-]
+import {getAllBookings, updateBooking, cancelBooking} from '../utils/ApiFunctions.js';
+import { bookRoom } from '../utils/ApiFunctions.js';
+import { toast } from "react-toastify"; // Thêm thông báo toast cho trải nghiệm người dùng
 
 const BookingsManagement = () => {
-  const [bookings, setBookings] = React.useState(initialBookings)
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
-  const [newBooking, setNewBooking] = React.useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' })
-  const [editingBooking, setEditingBooking] = React.useState(null)
+  const [bookings, setBookings] = useState([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newBooking, setNewBooking] = useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' });
+  const [loading, setLoading] = useState(true);
+  const [editingBooking, setEditingBooking] = useState(null);
 
-  const handleAddBooking = () => {
-    setBookings([...bookings, { id: bookings.length + 1, ...newBooking }])
-    setNewBooking({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' })
-    setIsAddDialogOpen(false)
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const allBookings = await getAllBookings();
+        setBookings(allBookings);
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  const handleAddBooking = async () => {
+    try {
+      setLoading(true);
+
+      const response = await bookRoom(newBooking);
+
+      setBookings([...bookings, response]);
+      setNewBooking({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' });
+      setIsAddDialogOpen(false);
+
+      toast.success('Đặt phòng thành công! 🎉');
+    } catch (error) {
+      toast.error(`Lỗi khi đặt phòng: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleEditBooking = (booking) => {
-    setEditingBooking(booking)
-    setNewBooking(booking)
-    setIsAddDialogOpen(true)
+    setEditingBooking(booking);
+    setNewBooking({
+      guestName: booking.guestName,
+      roomNumber: booking.roomNumber,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      status: booking.status,
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleUpdateBooking = async () => {
+    try {
+      const updatedBooking = await updateBooking(editingBooking.id, newBooking);
+      setBookings(
+          bookings.map(booking =>
+              booking.id === editingBooking.id ? updatedBooking : booking
+          )
+      );
+      setIsAddDialogOpen(false);
+      setEditingBooking(null);
+      setNewBooking({
+        guestName: '',
+        roomNumber: '',
+        checkIn: '',
+        checkOut: '',
+        status: 'Pending',
+      });
+    } catch (error) {
+      console.error("Could not save updated booking:", error.message);
+    }
+  };
+
+  const handleDeleteBooking = async (id) => {
+    try {
+      setLoading(true); // Bật chế độ loading trong giao diện
+
+      // Gọi API hủy booking
+      await cancelBooking(id);
+
+      // Cập nhật state bookings sau khi API xóa thành công
+      setBookings(bookings.filter(booking => booking.id !== id));
+    } catch (error) {
+      console.error('Error deleting booking:', error.message);
+    } finally {
+      setLoading(false); // Tắt chế độ loading
+    }
   }
 
-  const handleUpdateBooking = () => {
-    setBookings(bookings.map(booking => booking.id === editingBooking.id ? newBooking : booking))
-    setNewBooking({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' })
-    setEditingBooking(null)
-    setIsAddDialogOpen(false)
-  }
-
-  const handleDeleteBooking = (id) => {
-    setBookings(bookings.filter(booking => booking.id !== id))
-  }
 
   return (
     <div className="space-y-6">

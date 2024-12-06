@@ -26,7 +26,6 @@ const RoomsManagement = () => {
   const [branches, setBranches] = useState([]);
  
 
-  // Fetch all rooms.
   useEffect(() => {
       const fetchData = async () => {
           setLoading(true);
@@ -50,7 +49,6 @@ const RoomsManagement = () => {
   }, []);
 
 
-    // Handle Add or Update Room.
   const handleSaveRoom = async () => {
     try {
         const roomData = {
@@ -82,7 +80,6 @@ const RoomsManagement = () => {
     }
 };
 
-  // Handle Delete Room.
   const handleDeleteRoom = async (id) => {
     try {
       await deleteRoom(id);
@@ -93,7 +90,6 @@ const RoomsManagement = () => {
     }
   };
 
-  // Open dialog for adding or editing.
   const initializeRoomData = (room = null) => {
     return {
         id: room ? room.id : null,
@@ -108,32 +104,27 @@ const RoomsManagement = () => {
 };
 
 const openDialog = (room = null) => {
-  console.log("Opening dialog for room:", room); // Debugging line
+  console.log("Opening dialog for room:", room);
   setDialogData({
       editing: !!room,
       data: initializeRoomData(room),
   });
 };
 
-// Close dialog
 const closeDialog = () => setDialogData(null);
 
-
-  // Handle file upload and convert to base64.
 const handleFileUpload = (file) => {
     if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-            const base64Data = reader.result.split(',')[1]; // Lấy phần base64 không có metadata
+            const base64Data = reader.result.split(',')[1];
 
             const formData = new FormData();
-            formData.append('photo', base64Data); // Gửi đúng base64 không phải Blob
+            formData.append('photo', base64Data);
 
-            // Kiểm tra dữ liệu formData
             for (let pair of formData.entries()) {
                 console.log(pair[0]+ ': ' + pair[1]);
             }
-
             fetch("https://localhost:8080/api/v2/rooms/upload", {
                 method: "POST",
                 body: formData,
@@ -146,28 +137,28 @@ const handleFileUpload = (file) => {
                 console.error("Lỗi khi upload ảnh:", error);
             });
         };
-        reader.readAsDataURL(file);  // Chuyển file thành base64
+        reader.readAsDataURL(file);
     }
 };
 
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const data = await getAllBranches();  // Gọi hàm getAllBranches
+        const data = await getAllBranches();
         if (Array.isArray(data)) {
-          setBranches(data);  // Cập nhật state với dữ liệu branches
+          setBranches(data);
         } else {
           console.error('Expected an array of branches');
-          setBranches([]);  // Nếu không phải array, set branches là mảng rỗng
+          setBranches([]);
         }
       } catch (error) {
         console.error('Error fetching branches:', error);
-        setBranches([]);  // Nếu có lỗi, set branches là mảng rỗng
+        setBranches([]);
       }
     };
 
-    fetchBranches();  // Gọi hàm fetch khi component mount
-  }, []); // Chạy lần đầu khi component mount
+    fetchBranches();
+  }, []);
 
   return (
     <div className="space-y-6">

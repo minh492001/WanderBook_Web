@@ -1,10 +1,10 @@
 import axios from "axios";
+import {toast} from "react-toastify";
 
 export const api = axios.create({
 	baseURL: "http://localhost:8080"
 })
 
-/* Header to Authorize */
 export const getHeader = () => {
 	const token = sessionStorage.getItem("token")
 	return {
@@ -13,7 +13,6 @@ export const getHeader = () => {
 	}
 }
 
-/* This is function to register a user */
 export async function registerUser(registration) {
 	try {
 		const response = await api.post(`/api/v2/auth/register`, registration)
@@ -27,7 +26,6 @@ export async function registerUser(registration) {
 	} 
 }
 
-/* This is function to login */
 export async function loginUser (login) {
 	try {
 		const response = await api.post(`/api/v2/auth/login`, login)
@@ -42,7 +40,6 @@ export async function loginUser (login) {
 	}
 }
 
-/* This function gets all rooms with future bookings */
 export async function getAllRoomsWithFutureBookings() {
     try {
         const response = await api.get("/api/v2/rooms/all", { headers: getHeader() });
@@ -53,8 +50,6 @@ export async function getAllRoomsWithFutureBookings() {
     }
 }
 
-
-/* This function gets a room by its ID */
 export async function getRoomById(roomId) {
     try {
         const response = await api.get(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
@@ -65,8 +60,6 @@ export async function getRoomById(roomId) {
     }
 }
 
-
-/* This function adds a new room */
 export const addNewRoom = async (roomData) => {
     try {
         console.log('Sending payload to API:', roomData); // Log payload
@@ -81,8 +74,6 @@ export const addNewRoom = async (roomData) => {
     }
 };
 
-
-/* This function updates a room */
 export async function updateRoom(roomId, roomData) {
     try {
         console.log("Updating room with ID:", roomId); // Log roomId
@@ -98,20 +89,16 @@ export async function updateRoom(roomId, roomData) {
     }
 }
 
-
-/* This function delete a room */
 export const deleteRoom = async (roomId) => {
 	try {
-	  const response = await api.delete(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
-	  return response.data;
+		const response = await api.delete(`/api/v2/rooms/${roomId}`, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  console.error(`Error deleting room: ${error.response ? error.response.data : error.message}`);
-	  throw new Error('Could not delete room. Please try again later.');
+		console.error(`Error deleting room: ${error.response ? error.response.data : error.message}`);
+		throw new Error('Could not delete room. Please try again later.');
 	}
   };
 
-
-/* This function checks if a room exists by its number */
 export async function checkRoomExistsByNumber(roomNumber) {
     try {
         const response = await api.get(`/api/v2/rooms/exists?roomNumber=${roomNumber}`, { headers: getHeader() });
@@ -122,7 +109,6 @@ export async function checkRoomExistsByNumber(roomNumber) {
     }
 }
 
-/* This function gets rooms by their state */
 export async function getRoomsByState(state) {
     try {
         const response = await api.get(`/api/v2/rooms/state/${state}`, { headers: getHeader() });
@@ -133,8 +119,6 @@ export async function getRoomsByState(state) {
     }
 }
 
-
-/* This function gets rooms by type and price range */
 export async function getRoomsByTypeAndPrice(roomType, minPrice, maxPrice) {
     try {
         const response = await api.get(`/api/v2/rooms/type-price`, {
@@ -160,19 +144,17 @@ export const getRoomTypes = async () => {
     }
 };
 
-
-
-/* This function gets all bookings from the database */
-export async function getAllBookings() {
+export const getAllBookings = async () => {
 	try {
-		const result = await api.get("/bookings/all-bookings")
-		return result.data
+		const result = await api.get("/api/v2/bookings/all", {
+			headers: getHeader(), // Sử dụng getHeader để lấy headers
+		});
+		return result.data; // Trả về danh sách booking
 	} catch (error) {
-		throw new Error(`Error fetching booking : ${error.message}`)
+		throw new Error(`Error fetching bookings: ${error.message}`);
 	}
-}
+};
 
-/* This function get booking by the confirmation code */
 export async function getBookingByConfirmationCode(confirmationCode) {
 	try{
 		const result = await api.get(`/bookings/confirmation/${confirmationCode}`)
@@ -186,46 +168,51 @@ export async function getBookingByConfirmationCode(confirmationCode) {
 	}
 }
 
-/* This function saves a new booking to the database */
-export async function bookRoom(roomId, booking) {
-	try{
-		const response = await api.post(`/bookings/room/${roomId}/booking`, booking)
-		return response.data
+export async function bookRoom(booking) {
+	if (!booking || typeof booking !== 'object') {
+		throw new Error('Invalid booking data');
+	}
+
+	try {
+		const response = await api.post(`/api/v2/bookings`, booking, {
+			headers: getHeader() // Thêm headers với token xác thực
+		});
+
+		return response.data;
 	} catch (error) {
-		if(error.response && error.response.data) {
-			throw new Error(error.response.data)
+		if (error.response && error.response.data) {
+			throw new Error(error.response.data.message || 'Error booking room');
 		} else {
-			throw new Error(`Error booking room : ${error.message}`)
+			throw new Error(`Error booking room: ${error.message}`);
 		}
 	}
 }
 
-/* This is the function to get user bookings by the user id */
-export async function getBookingsByEmail(email) {
-	try {
-		const response = await api.get(`/bookings/user/${email}/bookings`, {
-			headers: getHeader() 
-		})
-		return response.data
-	} catch (error) {
-		console.error("Error fetching bookings:", error.message)
-		throw new Error("Failed to fetch booking")
-	}
-}
-
-/* This function cancels booking */
 export async function cancelBooking(bookingId) {
 	try {
-		const result = await api.delete(`/bookings/booking/${bookingId}/delete`, {
-			headers : getHeader() 
-		})
-		return result.data
+		const result = await api.delete(`/api/v2/bookings/${bookingId}`, {
+			headers: getHeader(),
+		});
+		return result.data;
 	} catch (error) {
-		throw new Error(`Error cancelling booking : ${error.message}`)
+		throw new Error(`Error cancelling booking: ${error.message}`);
 	}
 }
 
-/* This function delete user */ 
+export async function updateBooking(id, bookingData) {
+	try {
+		const response = await api.put(
+				`/api/v2/bookings/${id}`,
+				bookingData,
+				{ headers: getHeader() }
+		);
+
+		return response.data; // Dữ liệu trả về từ server.
+	} catch (error) {
+		throw new Error(`Error updating booking: ${error.message}`);
+	}
+}
+
 export async function deleteUser(userId) {
 	try {
 		const response = await api.delete(`/users/delete/${userId}`, {
@@ -237,204 +224,163 @@ export async function deleteUser(userId) {
 	}
 }
 
-/* This function gets a single user */
 export async function getUser(email) {
-	try {
-		const response = await api.get(`/users/${email}`, {
-			headers : getHeader() // add Header to Authorize
-		})
-		return response.data
-	} catch (error) {
-		throw error
-	}
+	const response = await api.get(`/users/${email}`, {
+		headers: getHeader(), // add Header to Authorize
+	});
+	return response.data;
 }
 
-// Get all users (Admin only)
 export async function getAllUsers() {
-	try {
-	  const response = await api.get('/api/v2/user/all', { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw error;
-	}
+	const response = await api.get('/api/v2/user/all', { headers: getHeader() });
+	return response.data;
 }
 
-  // Get user by ID (Admin only)
 export async function getUserById(id) {
-	try {
-	  const response = await api.get(`/api/v2/user/${id}`, { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw error;
-	}
+	const response = await api.get(`/api/v2/user/${id}`, { headers: getHeader() });
+	return response.data;
 }
 
-// Get user by email (Admin or User)
 export async function getUserByEmail(email) {
-	try {
-	  const token = sessionStorage.getItem("token");
-	  const response = await api.get(`/api/v2/user/email/${email}`, { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw error;
-	}
-  }
+	const token = sessionStorage.getItem("token");
+	const response = await api.get(`/api/v2/user/email/${email}`, { headers: getHeader() });
+	return response.data;
+}
 
-  // Soft delete user by ID (Admin only)
 export async function deleteUserById(id) {
-	try {
-	  const response = await api.delete(`/api/v2/user/${id}`, { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw error;
-	}
-  }
+	const response = await api.delete(`/api/v2/user/${id}`, { headers: getHeader() });
+	return response.data;
+}
 
- // Soft delete user by email (Admin only)
 export async function deleteUserByEmail(email) {
 	try {
-	  const response = await api.delete(`/api/v2/user/by-email`, {
+		const response = await api.delete(`/api/v2/user/by-email`, {
 		headers: getHeader(),
 		params: { email }
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  console.error("Error deleting user by email:", error);
-	  throw error;
-	}
-  }
-  //update user by id (Admin only)
-  export const updateUser = async (id, updatedUser) => {
-	try {
-	  const response = await api.put(`/api/v2/user/${id}`, updatedUser, { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw error;
+		console.error("Error deleting user by email:", error);
+		throw error;
 	}
   }
 
-  //***service api functions 
-  //get all services
-  export async function getAllServices() {
+export const updateUser = async (id, updatedUser) => {
+	const response = await api.put(`/api/v2/user/${id}`, updatedUser, { headers: getHeader() });
+	return response.data;
+};
+
+export async function getAllServices() {
 	try {
-	  const response = await api.get("/api/v2/services/all", { headers: getHeader() });
-	  return response.data;
+		const response = await api.get("/api/v2/services/all", { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  throw new Error("Error while getting service list");
+		throw new Error("Error while getting service list");
 	}
   }
 
-  //get service by id
-  export async function getServiceById(id) {
+export async function getServiceById(id) {
 	try {
-	  const response = await api.get(`/api/v2/services/${id}`, { headers: getHeader() });
-	  return response.data;
+		const response = await api.get(`/api/v2/services/${id}`, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.status === 404) {
+		if (error.response && error.response.status === 404) {
 		throw new Error("Not found service");
-	  }
-	  throw new Error("Error while getting service");
+		}
+		throw new Error("Error while getting service");
 	}
   }
 
-  //Get services within the price range
-  export async function getServicesByPriceRange(minPrice, maxPrice) {
+export async function getServicesByPriceRange(minPrice, maxPrice) {
 	try {
-	  const response = await api.get(`/api/v2/services/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`, { headers: getHeader() });
-	  return response.data;
+		const response = await api.get(`/api/v2/services/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  throw new Error("Error when getting list of services by price range");
+		throw new Error("Error when getting list of services by price range");
 	}
   }
 
-  //Check the existence of the service
-  export async function checkServiceExists(id) {
+export async function checkServiceExists(id) {
 	try {
-	  const response = await api.get(`/api/v2/services/exists/${id}`, { headers: getHeader() });
-	  return response.data;
+		const response = await api.get(`/api/v2/services/exists/${id}`, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  throw new Error("Error checking service existence");
+		throw new Error("Error checking service existence");
 	}
   }
 
-  //Get service by name
-  export async function getServiceByName(serviceName) {
+export async function getServiceByName(serviceName) {
 	try {
-	  const response = await api.get(`/api/v2/services/name/${serviceName}`, { headers: getHeader() });
-	  return response.data;
+		const response = await api.get(`/api/v2/services/name/${serviceName}`, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.status === 404) {
+		if (error.response && error.response.status === 404) {
 		throw new Error("Service not found");
-	  }
-	  throw new Error("Error getting service information by name");
+		}
+		throw new Error("Error getting service information by name");
 	}
   }
 
-  //Add new service (ADMIN only)
-  export async function addService(simpleService) {
+export async function addService(simpleService) {
 	try {
-	  const response = await api.post("/api/v2/services/add", simpleService, { headers: getHeader() });
-	  return response.data;
-	} catch (error) {
-	  throw new Error("Error when adding new service");
+		const response = await api.post("/api/v2/services/add", simpleService, { headers: getHeader() });
+		return response.data;
+	} catch (error) {throw new Error("Error when adding new service");
 	}
   }
 
 export const updateBranch = async (id, branchData) => {
 	try {
-		// Gửi PUT request để cập nhật chi nhánh
 		const response = await api.put(`/api/v2/branches/${id}`, branchData, {
 			headers: getHeader(),
 		});
 
-		// Xử lý phản hồi nếu thành công
 		console.log('Updated branch:', response.data);
-		return response.data; // Trả về chi nhánh đã cập nhật
+		return response.data;
 	} catch (error) {
 		console.error('Error updating branch:', error.response ? error.response.data : error.message);
-		throw error; // Ném lỗi nếu có lỗi xảy ra
+		throw error;
 	}
 };
 
-  //Update or create new services(ADMIN only)
-  export async function saveService(id, serviceEdit) {
+export async function saveService(id, serviceEdit) {
 	try {
-	  const response = await api.post(`/api/v2/services/${id}`, serviceEdit, { headers: getHeader() });
-	  return response.data;
+		const response = await api.put(`/api/v2/services/${id}`, serviceEdit, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.status === 400) {
-		throw new Error(error.response.data);
-	  }
-	  throw new Error("Error when updating or creating a new service");
-	}
-  }
-
-  //Delete service by ID(ADMIN only)
-  export async function deleteService(id) {
-	try {
-	  const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
-	  if (response.status === 200 || response.status === 204) {
-		return { success: true, message: "Service was successfully deleted" };
-	  } else {
-		throw new Error("Unable to delete service");
-	  }
-	} catch (error) {
-	  console.error("Error while deleting service:", error);
-	  if (error.response) {
-		switch (error.response.status) {
-		  case 404:
-			throw new Error("Service does not exist or has been removed");
-		  case 403:
-			throw new Error("You do not have permission to delete this service.");
-		  default:
-			throw new Error("Error deleting service. Please try again later.");
+		if (error.response && error.response.status === 400) {
+			throw new Error(error.response.data);
 		}
-	  }
-	  throw new Error("Connection error. Please check your network connection and try again.");
+		throw new Error("Error when updating the service");
 	}
-  }
+}
 
-  /*Branch Management API Functions*/
+export async function deleteService(id) {
+	try {
+		const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
+
+		if (response.status === 200 || response.status === 204) {
+			return { success: true, message: "Service was successfully deleted" };
+		} else {
+			throw new Error("Unable to delete service");
+		}
+	} catch (error) {
+		console.error("Error while deleting service:", error);
+
+		if (error.response) {
+			switch (error.response.status) {
+				case 404:
+					throw new Error("Service does not exist or has been removed");
+				case 403:
+					throw new Error("You do not have permission to delete this service.");
+				default:
+					throw new Error("Error deleting service. Please try again later.");
+			}
+		}
+
+		throw new Error("Connection error. Please check your network connection and try again.");
+	}
+}
 
 export async function getAllBranches() {
 	try {
@@ -461,91 +407,87 @@ export async function getAllBranches() {
 	}
 }
 
-
-
-
 export async function getBranchById(id) {
 	try {
-	  const response = await api.get(`/api/v2/branches/${id}`, {
+		const response = await api.get(`/api/v2/branches/${id}`, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.status === 404) {
+		if (error.response && error.response.status === 404) {
 		throw new Error("Branch not found");
-	  }
-	  throw new Error(`Error fetching branch: ${error.message}`);
+		}
+		throw new Error(`Error fetching branch: ${error.message}`);
 	}
   }
 
-  export async function getBranchesByCity(city) {
+export async function getBranchesByCity(city) {
 	try {
-	  const response = await api.get(`/api/v2/branches/city/${city}`, {
+		const response = await api.get(`/api/v2/branches/city/${city}`, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error fetching branches by city: ${error.message}`);
+		throw new Error(`Error fetching branches by city: ${error.message}`);
 	}
   }
 
-  export async function getRoomsByBranchId(branchId) {
+export async function getRoomsByBranchIdAndState(branchId, state) {
 	try {
-	  const response = await api.get(`/api/v2/branches/${branchId}/rooms`, {
-		headers: getHeader()
-	  });
-	  return response.data;
+		const response = await api.get(`/api/v2/rooms/branch/${branchId}/state/${state}`, {
+			headers: getHeader() // Thêm headers với token xác thực
+		});
+		return response.data; // Trả về danh sách phòng
 	} catch (error) {
-	  throw new Error(`Error fetching rooms for branch: ${error.message}`);
+		throw new Error(`Error fetching rooms for branch: ${error.message}`);
 	}
-  }
+}
 
-  export async function addBranch(branch) {
+export async function addBranch(branch) {
 	try {
-	  const response = await api.post("/api/v2/branches", branch, {
+		const response = await api.post("/api/v2/branches", branch, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error adding new branch: ${error.message}`);
+		throw new Error(`Error adding new branch: ${error.message}`);
 	}
   }
 
-  export async function deleteBranch(id) {
+export async function deleteBranch(id) {
 	try {
-	  const response = await api.delete(`/api/v2/branches/${id}`, {
+		const response = await api.delete(`/api/v2/branches/${id}`, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error deleting branch: ${error.message}`);
+		throw new Error(`Error deleting branch: ${error.message}`);
 	}
   }
 
-  export async function addServiceToBranch(branchId, serviceId) {
+export async function addServiceToBranch(branchId, serviceId) {
 	try {
-	  const response = await api.put(`/api/v2/branches/${branchId}/services/add?serviceId=${serviceId}`, null, {
+		const response = await api.put(`/api/v2/branches/${branchId}/services/add?serviceId=${serviceId}`, null, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error adding service to branch: ${error.message}`);
+		throw new Error(`Error adding service to branch: ${error.message}`);
 	}
   }
 
-  export async function removeServiceFromBranch(branchId, serviceId) {
+export async function removeServiceFromBranch(branchId, serviceId) {
 	try {
-	  const response = await api.put(`/api/v2/branches/${branchId}/services/remove?serviceId=${serviceId}`, null, {
+		const response = await api.put(`/api/v2/branches/${branchId}/services/remove?serviceId=${serviceId}`, null, {
 		headers: getHeader()
-	  });
-	  return response.data;
+		});
+		return response.data;
 	} catch (error) {
-	  throw new Error(`Error removing service from branch: ${error.message}`);
+		throw new Error(`Error removing service from branch: ${error.message}`);
 	}
   }
 
- /* This function changes the user's password */
- export async function changePassword(userId, newPassword, confirmPassword) {
+export async function changePassword(userId, newPassword, confirmPassword) {
     try {
         const response = await api.put(
             `/api/v2/user/changePassword/${userId}`,
@@ -565,13 +507,7 @@ export async function getBranchById(id) {
     }
 }
 
-/**
- * Xác minh mã OTP và thay đổi mật khẩu
- * @param {string} email - Địa chỉ email người dùng
- * @param {number} otp - Mã OTP
- * @param {Object} changePassword - Đối tượng chứa mật khẩu mới và mật khẩu xác nhận
- * @returns {Promise} - Phản hồi từ server
- */export const verifyAndChangePassword = async (email, otp, changePassword) => {
+export const verifyAndChangePassword = async (email, otp, changePassword) => {
     try {
         const response = await api.put(
             `/api/v2/forgot-password/verify-and-change-password/${email}`,
@@ -590,17 +526,7 @@ export async function getBranchById(id) {
     }
 };
 
-/**
- * Gửi mã xác minh OTP qua email
- * @param {string} email - Địa chỉ email người dùng
- * @returns {Promise} - Phản hồi từ server
- */
- /**
- * Gửi mã xác minh OTP qua email
- * @param {string} email - Địa chỉ email người dùng
- * @returns {Promise} - Phản hồi từ server
- */
- export const sendVerificationEmail = async (email) => {
+export const sendVerificationEmail = async (email) => {
     try {
         const response = await api.post(`/api/v2/forgot-password/verify-mail/${email}`);
         return response.data; // trả về nội dung từ phản hồi của server
@@ -610,17 +536,10 @@ export async function getBranchById(id) {
     }
 };
  
- /**
-  * Xác minh mã OTP và thay đổi mật khẩu
-  * @param {string} email - Địa chỉ email người dùng
-  * @param {number} otp - Mã OTP
-  * @param {Object} changePassword - Đối tượng chứa mật khẩu mới và mật khẩu xác nhận
-  * @returns {Promise} - Phản hồi từ server
-  */
- export const verifyOtpAndChangePassword = async (email, otp, changePassword) => {
+export const verifyOtpAndChangePassword = async (email, otp, changePassword) => {
     try {
-        console.log("changePassword:", changePassword); // In ra để kiểm tra
-        console.log("otp:", otp); // In ra để kiểm tra
+        console.log("changePassword:", changePassword);
+        console.log("otp:", otp);
 
         if (!changePassword.newPassword || !changePassword.confirmPassword) {
             throw new Error("Both newPassword and confirmPassword must be provided.");
@@ -631,7 +550,7 @@ export async function getBranchById(id) {
             changePassword,
             { params: { otp } }
         );
-        return response.data; // trả về nội dung từ phản hồi của server
+        return response.data;
     } catch (error) {
         console.error("Error while changing password:", error);
         toast.error("Something went wrong. Please try again.");

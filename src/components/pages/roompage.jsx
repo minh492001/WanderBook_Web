@@ -51,10 +51,9 @@ const RoomPage = () => {
     const [selectedBranch, setSelectedBranch] = useState('all');
     const navigate = useNavigate();
 
-  // Cập nhật hàm kiểm tra đăng nhập để sử dụng token
   const isLoggedIn = () => {
     const token = sessionStorage.getItem('token');
-    return !!token; // Trả về true nếu token tồn tại, false nếu không
+    return !!token;
   };
 
   const handleBookNow = () => {
@@ -68,11 +67,11 @@ const RoomPage = () => {
   useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const data = await getAllRoomsWithFutureBookings(); // Call API function
-                setRooms(data); // Cập nhật state với dữ liệu từ API
+                const data = await getAllRoomsWithFutureBookings();
+                setRooms(data);
                 setLoading(false);
             } catch (err) {
-                setError(err.message); // Lưu lỗi (nếu có)
+                setError(err.message);
                 setLoading(false);
             }
         };

@@ -27,7 +27,6 @@ const BranchesSection = () => {
         fetchBranches();
     }, []);
 
-    // eslint-disable-next-line react/prop-types
     const CustomPrevArrow = ({ className, onClick }) => (
         <button
             className={`${className} custom-arrow custom-prev-arrow`}
@@ -38,7 +37,6 @@ const BranchesSection = () => {
         </button>
     );
 
-    // eslint-disable-next-line react/prop-types
     const CustomNextArrow = ({ className, onClick }) => (
         <button
             className={`${className} custom-arrow custom-next-arrow`}

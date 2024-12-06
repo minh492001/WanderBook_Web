@@ -50,7 +50,7 @@ const RegisterPage = () => {
     try {
       const formattedValues = {
         ...values,
-        dateOfBirth: new Date(values.dateOfBirth).getTime(),  // Chuyển đổi sang timestamp
+        dateOfBirth: new Date(values.dateOfBirth).getTime(),
       };
 
       await registerUser(formattedValues);
