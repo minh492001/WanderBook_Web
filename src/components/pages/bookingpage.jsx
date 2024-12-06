@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft } from 'lucide-react'
 import '../styles/booking-page.css'
 import { getRoomTypes ,getAllBranches } from '../utils/ApiFunctions.js';
 import { bookRoom, getRoomsByBranchIdAndState} from '../utils/ApiFunctions.js'
@@ -21,9 +21,12 @@ const BookingPage = () => {
   const totalGuests = bookingData.adults + bookingData.children
   const [rooms, setRooms] = useState([]); // Khai báo biến rooms
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+  };
 
   const handleBranchChange = async (selectedBranchId) => {
     setBookingData((prev) => ({ ...prev, branch: selectedBranchId }));
@@ -117,8 +120,10 @@ const BookingPage = () => {
     console.log('New Booking Data:', newBookingData);
     try {
       const response = await bookRoom(newBookingData);
+      showNotification('Booking Successfully', 'success');
       console.log('Booking successful:', response);
     } catch (error) {
+      showNotification('Booking fail', 'error')
       console.error('Error during booking:', error.message);
     }
   };
