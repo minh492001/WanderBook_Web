@@ -39,7 +39,6 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      // Call to your backend to invalidate the token
       await fetch('/api/logout', {
         method: 'POST',
         headers: {
@@ -47,16 +46,13 @@ export default function Dashboard() {
         }
       });
 
-      // Clear client-side storage
       sessionStorage.removeItem('email');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('role');
 
-      // Redirect to login page
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      // Handle logout error (e.g., show an error message to the user)
     }
   };
 

@@ -133,10 +133,8 @@ const UsersManagement = () => {
     try {
       let date;
       if (typeof dateValue === 'string') {
-        // Try parsing as ISO string
         date = parseISO(dateValue);
       } else if (typeof dateValue === 'number') {
-        // Assume it's a timestamp
         date = new Date(dateValue);
       } else if (dateValue instanceof Date) {
         date = dateValue;
