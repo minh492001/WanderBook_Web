@@ -3,6 +3,8 @@ import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Mo
 import { Link } from 'react-router-dom'
 import '../styles/booking-page.css'
 import { getRoomTypes ,getAllBranches } from '../utils/ApiFunctions.js';
+import { bookRoom, getRoomsByBranchIdAndState} from '../utils/ApiFunctions.js'
+
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -16,11 +18,33 @@ const BookingPage = () => {
     selectedRoom: null,
   })
   const [errors, setErrors] = useState({})
-  
   const [branches, setBranches] = useState([]);
   const [roomTypes, setRoomTypes] = useState([]);
-
   const totalGuests = bookingData.adults + bookingData.children
+  const [rooms, setRooms] = useState([]); // Khai báo biến rooms
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+
+  const handleBranchChange = async (selectedBranchId) => {
+    setBookingData((prev) => ({ ...prev, branch: selectedBranchId })); // Cập nhật giá trị branch trong bookingData
+    await fetchRooms(selectedBranchId, 'OPEN'); // Gọi hàm fetch với trạng thái OPEN
+  };
+
+
+  const fetchRooms = async (branchId, state) => {
+    setLoading(true);
+    try {
+      const roomsData = await getRoomsByBranchIdAndState(branchId, state); // Gọi API để lấy phòng
+      setRooms(roomsData); // Cập nhật danh sách phòng
+    } catch (error) {
+      console.error('Error fetching rooms:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -39,9 +63,7 @@ const BookingPage = () => {
     };
 
     fetchBranches();  // Gọi hàm fetch khi component mount
-  }, []); // Chạy lần đầu khi component mount
-
-
+  }, []);
   useEffect(() => {
     const fetchRoomTypes = async () => {
       try {
@@ -61,40 +83,54 @@ const BookingPage = () => {
     fetchRoomTypes();  // Gọi hàm fetch khi component mount
   }, []);
 
-  const submitBooking = async () => {
-    if (validateForm()) {
-      try {
-        const response = await fetch('/api/bookings/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${yourAuthToken}`, // Nếu cần xác thực bằng JWT
-          },
-          body: JSON.stringify({
-            checkInDate: bookingData.checkInDate,
-            checkOutDate: bookingData.checkOutDate,
-            adults: bookingData.adults,
-            children: bookingData.children,
-            branch: bookingData.branch,
-            roomType: bookingData.roomType,
-          })
-        });
 
-        if (response.ok) {
-          const data = await response.json();
-          alert('Booking created successfully!');
-          console.log(data); // Để xử lý kết quả booking tạo thành công
-        } else {
-          const errorData = await response.json();
-          alert('Error creating booking: ' + errorData.message);
-        }
-      } catch (error) {
-        console.error('Error during booking:', error);
-        alert('An error occurred while creating the booking');
-      }
+  const submitBooking = async () => {
+    // Kiểm tra xem phòng đã được chọn chưa
+    if (!bookingData.selectedRoom) {
+      console.error('Selected room is not defined');
+      return; // Dừng lại nếu selectedRoom không tồn tại
+    }
+
+    // Lấy userId từ sessionStorage
+    const userIdString = sessionStorage.getItem('id'); // Giả sử 'id' là khóa bạn đã lưu userId
+
+    // Kiểm tra xem userId có tồn tại không
+    if (!userIdString) {
+      console.error('User ID is not defined');
+      return; // Dừng lại nếu userId không tồn tại
+    }
+
+    // Chuyển đổi userId từ chuỗi sang số nguyên
+    const userId = parseInt(userIdString, 10); // Chuyển đổi thành số nguyên
+
+    // Kiểm tra xem việc chuyển đổi có thành công không
+    if (isNaN(userId)) {
+      console.error('User ID is not a valid number');
+      return; // Dừng lại nếu userId không phải là một số hợp lệ
+    }
+
+    const newBookingData = {
+      userId: userId, // Sử dụng userId đã chuyển đổi
+      roomId: bookingData.selectedRoom.id, // Truy cập id chỉ khi selectedRoom tồn tại
+      checkInTimestamp: new Date(bookingData.checkInDate).getTime(),
+      checkOutTimestamp: new Date(bookingData.checkOutDate).getTime(),
+      adultsCount: bookingData.adults,
+      childrenCount: bookingData.children,
+      totalGuests: bookingData.adults + bookingData.children,
+      notes: bookingData.notes || '',
+      serviceIds: bookingData.serviceIds || [],
+      status: 'PENDING'
+    };
+
+    console.log('New Booking Data:', newBookingData); // Log dữ liệu để kiểm tra
+
+    try {
+      const response = await bookRoom(newBookingData); // Gọi hàm bookRoom với newBookingData
+      console.log('Booking successful:', response);
+    } catch (error) {
+      console.error('Error during booking:', error.message); // Hiển thị thông báo lỗi
     }
   };
-
 
   const handleIncrement = (field) => {
     setBookingData((prev) => ({
@@ -102,7 +138,6 @@ const BookingPage = () => {
       [field]: Math.min(prev[field] + 1, field === 'adults' ? 4 : 5)
     }))
   }
-
   const handleDecrement = (field) => {
     setBookingData((prev) => ({
       ...prev,
@@ -112,7 +147,6 @@ const BookingPage = () => {
   useEffect(() => {
     validateForm()
   }, [bookingData])
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     let updatedValue = value
@@ -123,7 +157,6 @@ const BookingPage = () => {
 
     setBookingData((prev) => ({ ...prev, [name]: updatedValue }))
   }
-
   const validateForm = () => {
     let newErrors = {}
     const today = new Date()
@@ -148,13 +181,11 @@ const BookingPage = () => {
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleNextStep = () => {
     if (validateForm()) {
       setStep((prevStep) => prevStep + 1)
     }
   }
-
   const handlePrevStep = () => {
     setStep((prevStep) => prevStep - 1)
   }
@@ -309,12 +340,12 @@ const BookingPage = () => {
                         name="branch"
                         className="form-input"
                         value={bookingData.branch}
-                        onChange={handleInputChange}
+                        onChange={(e) => handleBranchChange(e.target.value)} // Gọi hàm khi chọn chi nhánh
                         required
                     >
                       <option value="">Select a branch</option>
                       {branches.map((branch) => (
-                          <option key={branch.id} value={branch.branchName}>
+                          <option key={branch.id} value={branch.id}> {/* Sử dụng ID làm giá trị */}
                             {branch.branchName}
                           </option>
                       ))}
@@ -340,8 +371,6 @@ const BookingPage = () => {
                           </option>
                       ))}
                     </select>
-
-
                   </div>
                 </div>
               </div>
@@ -352,28 +381,39 @@ const BookingPage = () => {
             <>
               <h2 className="text-2xl font-semibold mb-4">Available Rooms</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {roomTypes.map((type) => (
-                    <div key={type} className="room-card">
-                      <img src="/placeholder.svg?height=200&width=300" alt={`${type} Room`}
-                           className="w-full h-48 object-cover rounded-t-lg"/>
-                      <div className="p-4">
-                        <h3 className="text-xl font-semibold mb-2">{type} Room</h3>
-                        <p className="text-gray-600 mb-4">Luxurious {type.toLowerCase()} room with all amenities</p>
-                        <button
-                            onClick={() => {
-                              setBookingData((prev) => ({...prev, selectedRoom: type}))
-                              handleNextStep()
-                            }}
-                            className="btn-primary w-full"
-                        >
-                          Select Room
-                        </button>
-                      </div>
-                    </div>
-                ))}
+                {loading ? (
+                    <p>Loading rooms...</p> // Hiển thị thông báo loading nếu đang fetch dữ liệu
+                ) : rooms.length === 0 ? (
+                    <p>No available rooms.</p> // Thông báo nếu không có phòng nào
+                ) : (
+                    rooms.map((room) => (
+                        <div key={room.id} className="room-card">
+                          <img
+                              src="/placeholder.svg?height=200&width=300"
+                              alt={`${room.roomNumber} Room`}
+                              className="w-full h-48 object-cover rounded-t-lg"
+                          />
+                          <div className="p-4">
+                            <h3 className="text-xl font-semibold mb-2">{room.roomNumber} Room</h3>
+                            <p className="text-gray-600 mb-4">
+                              Luxurious {room.type ? room.type.toLowerCase() : 'unknown'} room with all amenities
+                            </p>
+                            <button
+                                onClick={() => {
+                                  setBookingData((prev) => ({ ...prev, selectedRoom: room })); // Cập nhật thông tin phòng đã chọn
+                                  handleNextStep(); // Chuyển sang bước tiếp theo
+                                }}
+                                className="btn-primary w-full"
+                            >
+                              Select Room
+                            </button>
+                          </div>
+                        </div>
+                    ))
+                )}
               </div>
             </>
-        )
+        );
       case 5:
         return (
             <>
@@ -443,9 +483,13 @@ const BookingPage = () => {
                     <ChevronRight className="inline-block ml-2" />
                   </button>
               ) : (
-                  <button onClick={() => console.log('Booking submitted:', bookingData)} className="btn-primary ml-auto">
-                    Confirm Booking
-                    <ChevronRight className="inline-block ml-2" />
+                  <button
+                      onClick={submitBooking} // Gọi hàm submitBooking khi nhấn nút
+                      className="btn-primary ml-auto"
+                      disabled={isSubmitting} // Vô hiệu hóa nút khi đang xử lý yêu cầu
+                  >
+                    {isSubmitting ? 'Processing...' : 'Confirm Booking'} {/* Hiển thị trạng thái */}
+                    <ChevronRight className="inline-block ml-2"/>
                   </button>
               )}
             </div>

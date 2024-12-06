@@ -21,19 +21,31 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getAllBookings } from '../utils/ApiFunctions.js'; // Đường dẫn đến hàm getAllBookings
+import { useEffect, useState } from 'react';
 
-// Mock data for bookings
-const initialBookings = [
-  { id: 1, guestName: 'John Doe', roomNumber: '101', checkIn: '2023-06-01', checkOut: '2023-06-05', status: 'Confirmed' },
-  { id: 2, guestName: 'Jane Smith', roomNumber: '102', checkIn: '2023-06-03', checkOut: '2023-06-07', status: 'Checked In' },
-  { id: 3, guestName: 'Bob Johnson', roomNumber: '103', checkIn: '2023-06-05', checkOut:  '2023-06-10', status: 'Pending' },
-]
 
 const BookingsManagement = () => {
-  const [bookings, setBookings] = React.useState(initialBookings)
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
-  const [newBooking, setNewBooking] = React.useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' })
-  const [editingBooking, setEditingBooking] = React.useState(null)
+  const [bookings, setBookings] = useState([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newBooking, setNewBooking] = useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' });
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const allBookings = await getAllBookings(); // Gọi hàm để fetch bookings
+        setBookings(allBookings); // Cập nhật state với danh sách bookings
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+      } finally {
+        setLoading(false); // Đặt loading thành false sau khi hoàn thành
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   const handleAddBooking = () => {
     setBookings([...bookings, { id: bookings.length + 1, ...newBooking }])

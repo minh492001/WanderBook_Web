@@ -163,14 +163,16 @@ export const getRoomTypes = async () => {
 
 
 /* This function gets all bookings from the database */
-export async function getAllBookings() {
+export const getAllBookings = async () => {
 	try {
-		const result = await api.get("/bookings/all-bookings")
-		return result.data
+		const result = await api.get("/api/v2/bookings/all", {
+			headers: getHeader(), // Sử dụng getHeader để lấy headers
+		});
+		return result.data; // Trả về danh sách booking
 	} catch (error) {
-		throw new Error(`Error fetching booking : ${error.message}`)
+		throw new Error(`Error fetching bookings: ${error.message}`);
 	}
-}
+};
 
 /* This function get booking by the confirmation code */
 export async function getBookingByConfirmationCode(confirmationCode) {
@@ -187,15 +189,28 @@ export async function getBookingByConfirmationCode(confirmationCode) {
 }
 
 /* This function saves a new booking to the database */
-export async function bookRoom(roomId, booking) {
-	try{
-		const response = await api.post(`/bookings/room/${roomId}/booking`, booking)
-		return response.data
+export async function bookRoom(booking) {
+	// Kiểm tra xem đối tượng booking có hợp lệ không
+	if (!booking || typeof booking !== 'object') {
+		throw new Error('Invalid booking data');
+	}
+
+	try {
+		// Gửi yêu cầu POST đến API để tạo đặt phòng
+		const response = await api.post(`/api/v2/bookings`, booking, {
+			headers: getHeader() // Thêm headers với token xác thực
+		});
+
+		// Trả về dữ liệu phản hồi từ máy chủ
+		return response.data;
 	} catch (error) {
-		if(error.response && error.response.data) {
-			throw new Error(error.response.data)
+		// Xử lý lỗi từ phản hồi của máy chủ
+		if (error.response && error.response.data) {
+			// Nếu có thông điệp lỗi từ máy chủ, sử dụng nó
+			throw new Error(error.response.data.message || 'Error booking room');
 		} else {
-			throw new Error(`Error booking room : ${error.message}`)
+			// Nếu không, sử dụng thông điệp lỗi chung
+			throw new Error(`Error booking room: ${error.message}`);
 		}
 	}
 }
@@ -497,16 +512,16 @@ export async function getBranchById(id) {
 	}
   }
 
-  export async function getRoomsByBranchId(branchId) {
+export async function getRoomsByBranchIdAndState(branchId, state) {
 	try {
-	  const response = await api.get(`/api/v2/branches/${branchId}/rooms`, {
-		headers: getHeader()
-	  });
-	  return response.data;
+		const response = await api.get(`/api/v2/rooms/branch/${branchId}/state/${state}`, {
+			headers: getHeader() // Thêm headers với token xác thực
+		});
+		return response.data; // Trả về danh sách phòng
 	} catch (error) {
-	  throw new Error(`Error fetching rooms for branch: ${error.message}`);
+		throw new Error(`Error fetching rooms for branch: ${error.message}`);
 	}
-  }
+}
 
   export async function addBranch(branch) {
 	try {
