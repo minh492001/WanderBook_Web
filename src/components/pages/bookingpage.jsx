@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import '../styles/booking-page.css'
 import { getRoomTypes ,getAllBranches } from '../utils/ApiFunctions.js';
 import { bookRoom, getRoomsByBranchIdAndState} from '../utils/ApiFunctions.js'
-
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -28,16 +26,15 @@ const BookingPage = () => {
 
 
   const handleBranchChange = async (selectedBranchId) => {
-    setBookingData((prev) => ({ ...prev, branch: selectedBranchId })); // Cập nhật giá trị branch trong bookingData
-    await fetchRooms(selectedBranchId, 'OPEN'); // Gọi hàm fetch với trạng thái OPEN
+    setBookingData((prev) => ({ ...prev, branch: selectedBranchId }));
+    await fetchRooms(selectedBranchId, 'OPEN');
   };
-
 
   const fetchRooms = async (branchId, state) => {
     setLoading(true);
     try {
-      const roomsData = await getRoomsByBranchIdAndState(branchId, state); // Gọi API để lấy phòng
-      setRooms(roomsData); // Cập nhật danh sách phòng
+      const roomsData = await getRoomsByBranchIdAndState(branchId, state);
+      setRooms(roomsData);
     } catch (error) {
       console.error('Error fetching rooms:', error.message);
     } finally {
@@ -49,16 +46,16 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const data = await getAllBranches();  // Gọi hàm getAllBranches
+        const data = await getAllBranches();
         if (Array.isArray(data)) {
-          setBranches(data);  // Cập nhật state với dữ liệu branches
+          setBranches(data);
         } else {
           console.error('Expected an array of branches');
-          setBranches([]);  // Nếu không phải array, set branches là mảng rỗng
+          setBranches([]);
         }
       } catch (error) {
         console.error('Error fetching branches:', error);
-        setBranches([]);  // Nếu có lỗi, set branches là mảng rỗng
+        setBranches([]);
       }
     };
 
@@ -67,51 +64,46 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchRoomTypes = async () => {
       try {
-        const data = await getRoomTypes();  // Gọi hàm fetch dữ liệu loại phòng
+        const data = await getRoomTypes();
         if (Array.isArray(data)) {
-          setRoomTypes(data);  // Cập nhật state với dữ liệu loại phòng
+          setRoomTypes(data);
         } else {
           console.error('Expected an array of room types');
-          setRoomTypes([]);  // Nếu dữ liệu không phải là mảng, set mảng rỗng
+          setRoomTypes([]);
         }
       } catch (error) {
         console.error('Error fetching room types:', error);
-        setRoomTypes([]);  // Nếu có lỗi, set mảng rỗng
+        setRoomTypes([]);
       }
     };
 
-    fetchRoomTypes();  // Gọi hàm fetch khi component mount
+    fetchRoomTypes();
   }, []);
 
 
   const submitBooking = async () => {
-    // Kiểm tra xem phòng đã được chọn chưa
     if (!bookingData.selectedRoom) {
       console.error('Selected room is not defined');
-      return; // Dừng lại nếu selectedRoom không tồn tại
+      return;
     }
 
-    // Lấy userId từ sessionStorage
-    const userIdString = sessionStorage.getItem('id'); // Giả sử 'id' là khóa bạn đã lưu userId
+    const userIdString = sessionStorage.getItem('id');
 
-    // Kiểm tra xem userId có tồn tại không
     if (!userIdString) {
       console.error('User ID is not defined');
-      return; // Dừng lại nếu userId không tồn tại
+      return;
     }
 
-    // Chuyển đổi userId từ chuỗi sang số nguyên
-    const userId = parseInt(userIdString, 10); // Chuyển đổi thành số nguyên
+    const userId = parseInt(userIdString, 10);
 
-    // Kiểm tra xem việc chuyển đổi có thành công không
     if (isNaN(userId)) {
       console.error('User ID is not a valid number');
-      return; // Dừng lại nếu userId không phải là một số hợp lệ
+      return;
     }
 
     const newBookingData = {
-      userId: userId, // Sử dụng userId đã chuyển đổi
-      roomId: bookingData.selectedRoom.id, // Truy cập id chỉ khi selectedRoom tồn tại
+      userId: userId,
+      roomId: bookingData.selectedRoom.id,
       checkInTimestamp: new Date(bookingData.checkInDate).getTime(),
       checkOutTimestamp: new Date(bookingData.checkOutDate).getTime(),
       adultsCount: bookingData.adults,
@@ -122,13 +114,12 @@ const BookingPage = () => {
       status: 'PENDING'
     };
 
-    console.log('New Booking Data:', newBookingData); // Log dữ liệu để kiểm tra
-
+    console.log('New Booking Data:', newBookingData);
     try {
-      const response = await bookRoom(newBookingData); // Gọi hàm bookRoom với newBookingData
+      const response = await bookRoom(newBookingData);
       console.log('Booking successful:', response);
     } catch (error) {
-      console.error('Error during booking:', error.message); // Hiển thị thông báo lỗi
+      console.error('Error during booking:', error.message);
     }
   };
 

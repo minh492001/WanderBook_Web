@@ -73,15 +73,14 @@ const HomePage = () => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const data = await getAllRoomsWithFutureBookings(); // Call API function
-        setRooms(data); // Cập nhật state với dữ liệu từ API
+        const data = await getAllRoomsWithFutureBookings();
+        setRooms(data);
         setLoading(false);
       } catch (err) {
-        setError(err.message); // Lưu lỗi (nếu có)
+        setError(err.message);
         setLoading(false);
       }
     };
-
     fetchRooms();
   }, []);
 
