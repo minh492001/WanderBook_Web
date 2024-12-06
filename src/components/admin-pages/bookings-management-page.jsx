@@ -26,9 +26,9 @@ import { bookRoom } from '../utils/ApiFunctions.js';
 import { toast } from "react-toastify"; // Thêm thông báo toast cho trải nghiệm người dùng
 
 const BookingsManagement = () => {
-  const [bookings, setBookings] = useState([]); // Danh sách đặt phòng
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false); // Dialog trạng thái
-  const [newBooking, setNewBooking] = useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' }); // Thông tin đặt phòng mới
+  const [bookings, setBookings] = useState([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newBooking, setNewBooking] = useState({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' });
   const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState(null);
 
@@ -49,7 +49,7 @@ const BookingsManagement = () => {
 
   const handleAddBooking = async () => {
     try {
-      setLoading(true); // Bắt đầu loading
+      setLoading(true);
 
       const response = await bookRoom(newBooking);
 
@@ -65,9 +65,8 @@ const BookingsManagement = () => {
     }
   }
 
-
   const handleEditBooking = (booking) => {
-    setEditingBooking(booking); // Set thông tin booking đang được chỉnh sửa
+    setEditingBooking(booking);
     setNewBooking({
       guestName: booking.guestName,
       roomNumber: booking.roomNumber,
