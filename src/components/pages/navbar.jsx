@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X, User, LogOut, UserCircle } from 'lucide-react'
 import '../styles/navbar.css'
+import Logo from '../../assets/icon.png'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -55,7 +56,7 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center justify-start flex-1">
               <a href="/" className="flex-shrink-0 logo-hover">
-                <img className="h-10 w-auto" src="https://ik.imagekit.io/0ofixtqpt/hotel-logo.png?updatedAt=1685544839449" alt="Grand Lusso Hotel Logo" />
+                <img className="h-10 w-auto" src={Logo} alt="Grand Lusso Hotel Logo" />
               </a>
               <div className="hidden md:block ml-10">
                 <div className="flex items-baseline space-x-8">

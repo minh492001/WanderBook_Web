@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, Moon, Shield, Clock, Gift } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import {Calendar, Users, MapPin, Bed, CreditCard, ChevronRight, ChevronLeft, CheckCircle, XCircle} from 'lucide-react'
 import '../styles/booking-page.css'
 import { getRoomTypes ,getAllBranches } from '../utils/ApiFunctions.js';
 import { bookRoom, getRoomsByBranchIdAndState} from '../utils/ApiFunctions.js'
+import {AnimatePresence, motion} from "framer-motion";
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -21,9 +22,44 @@ const BookingPage = () => {
   const totalGuests = bookingData.adults + bookingData.children
   const [rooms, setRooms] = useState([]); // Khai báo biến rooms
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // eslint-disable-next-line react/prop-types
+  const Notification = ({ message, type, onClose }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white flex items-center z-50`}
+        >
+          {type === 'success' ? (
+              <CheckCircle className="w-5 h-5 mr-2" />
+          ) : (
+              <XCircle className="w-5 h-5 mr-2" />
+          )}
+          <span>{message}</span>
+          <button
+              onClick={onClose}
+              className="ml-4 text-white hover:text-gray-200 focus:outline-none"
+          >
+            <XCircle className="w-4 h-4" />
+          </button>
+        </motion.div>
+    );
+  };
 
+  const handleCloseNotification = () => {
+    setNotification({ show: false, message: '', type: '' });
+  };
+
+
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+  };
 
   const handleBranchChange = async (selectedBranchId) => {
     setBookingData((prev) => ({ ...prev, branch: selectedBranchId }));
@@ -117,8 +153,10 @@ const BookingPage = () => {
     console.log('New Booking Data:', newBookingData);
     try {
       const response = await bookRoom(newBookingData);
+      showNotification('Booking Successfully', 'success');
       console.log('Booking successful:', response);
     } catch (error) {
+      showNotification('Booking fail', 'error')
       console.error('Error during booking:', error.message);
     }
   };
@@ -485,8 +523,15 @@ const BookingPage = () => {
               )}
             </div>
           </form>
-
-
+          <AnimatePresence>
+            {notification.show && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={handleCloseNotification}
+                />
+            )}
+          </AnimatePresence>
         </div>
       </div>
   )
