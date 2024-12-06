@@ -4,7 +4,6 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getAllBranches } from '../utils/ApiFunctions';
-import { ArrowLeftCircle, ArrowRightCircle } from 'lucide-react';
 import '../styles/branches-section.css';
 
 const BranchesSection = () => {
@@ -27,26 +26,6 @@ const BranchesSection = () => {
         fetchBranches();
     }, []);
 
-    const CustomPrevArrow = ({ className, onClick }) => (
-        <button
-            className={`${className} custom-arrow custom-prev-arrow`}
-            onClick={onClick}
-            aria-label="Previous slide"
-        >
-            <ArrowLeftCircle className="w-10 h-10" />
-        </button>
-    );
-
-    const CustomNextArrow = ({ className, onClick }) => (
-        <button
-            className={`${className} custom-arrow custom-next-arrow`}
-            onClick={onClick}
-            aria-label="Next slide"
-        >
-            <ArrowRightCircle className="w-10 h-10" />
-        </button>
-    );
-
     const settings = {
         dots: true,
         infinite: true,
@@ -55,8 +34,6 @@ const BranchesSection = () => {
         slidesToScroll: 1,
         autoplay: true,
         autoplaySpeed: 3000,
-        prevArrow: <CustomPrevArrow />,
-        nextArrow: <CustomNextArrow />,
         responsive: [
             {
                 breakpoint: 1024,
@@ -84,7 +61,7 @@ const BranchesSection = () => {
             ) : error ? (
                 <p className="text-center text-red-500">{error}</p>
             ) : branches.length > 0 ? (
-                <div className="relative px-12 md:px-0">
+                <div className="relative px-12">
                     <Slider {...settings}>
                         {branches.map((branch) => (
                             <div key={branch.id} className="px-2">
