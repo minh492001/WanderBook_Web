@@ -215,30 +215,34 @@ export async function bookRoom(booking) {
 	}
 }
 
-/* This is the function to get user bookings by the user id */
-export async function getBookingsByEmail(email) {
-	try {
-		const response = await api.get(`/bookings/user/${email}/bookings`, {
-			headers: getHeader() 
-		})
-		return response.data
-	} catch (error) {
-		console.error("Error fetching bookings:", error.message)
-		throw new Error("Failed to fetch booking")
-	}
-}
-
 /* This function cancels booking */
 export async function cancelBooking(bookingId) {
 	try {
-		const result = await api.delete(`/bookings/booking/${bookingId}/delete`, {
-			headers : getHeader() 
-		})
-		return result.data
+		const result = await api.delete(`/api/v2/bookings/${bookingId}`, {
+			headers: getHeader(),
+		});
+		return result.data;
 	} catch (error) {
-		throw new Error(`Error cancelling booking : ${error.message}`)
+		throw new Error(`Error cancelling booking: ${error.message}`);
 	}
 }
+
+export async function updateBooking(id, bookingData) {
+	try {
+		const response = await api.put(
+				`/api/v2/bookings/${id}`,
+				bookingData,
+				{ headers: getHeader() }
+		);
+
+		return response.data; // Dữ liệu trả về từ server.
+	} catch (error) {
+		throw new Error(`Error updating booking: ${error.message}`);
+	}
+}
+
+
+
 
 /* This function delete user */ 
 export async function deleteUser(userId) {
