@@ -397,42 +397,50 @@ export const updateBranch = async (id, branchData) => {
 };
 
   //Update or create new services(ADMIN only)
-  export async function saveService(id, serviceEdit) {
+export async function saveService(id, serviceEdit) {
 	try {
-	  const response = await api.post(`/api/v2/services/${id}`, serviceEdit, { headers: getHeader() });
-	  return response.data;
+		// Sử dụng phương thức PUT thay vì POST
+		const response = await api.put(`/api/v2/services/${id}`, serviceEdit, { headers: getHeader() });
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.status === 400) {
-		throw new Error(error.response.data);
-	  }
-	  throw new Error("Error when updating or creating a new service");
-	}
-  }
-
-  //Delete service by ID(ADMIN only)
-  export async function deleteService(id) {
-	try {
-	  const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
-	  if (response.status === 200 || response.status === 204) {
-		return { success: true, message: "Service was successfully deleted" };
-	  } else {
-		throw new Error("Unable to delete service");
-	  }
-	} catch (error) {
-	  console.error("Error while deleting service:", error);
-	  if (error.response) {
-		switch (error.response.status) {
-		  case 404:
-			throw new Error("Service does not exist or has been removed");
-		  case 403:
-			throw new Error("You do not have permission to delete this service.");
-		  default:
-			throw new Error("Error deleting service. Please try again later.");
+		// Kiểm tra lỗi và trả về thông báo phù hợp
+		if (error.response && error.response.status === 400) {
+			throw new Error(error.response.data);
 		}
-	  }
-	  throw new Error("Connection error. Please check your network connection and try again.");
+		throw new Error("Error when updating the service");
 	}
-  }
+}
+
+export async function deleteService(id) {
+	try {
+		// Gửi yêu cầu DELETE đến endpoint tương ứng
+		const response = await api.delete(`/api/v2/services/${id}`, { headers: getHeader() });
+
+		// Kiểm tra mã trạng thái phản hồi
+		if (response.status === 200 || response.status === 204) {
+			return { success: true, message: "Service was successfully deleted" };
+		} else {
+			throw new Error("Unable to delete service");
+		}
+	} catch (error) {
+		console.error("Error while deleting service:", error);
+
+		// Xử lý các lỗi cụ thể
+		if (error.response) {
+			switch (error.response.status) {
+				case 404:
+					throw new Error("Service does not exist or has been removed");
+				case 403:
+					throw new Error("You do not have permission to delete this service.");
+				default:
+					throw new Error("Error deleting service. Please try again later.");
+			}
+		}
+
+		// Xử lý lỗi kết nối
+		throw new Error("Connection error. Please check your network connection and try again.");
+	}
+}
 
   /*Branch Management API Functions*/
 
