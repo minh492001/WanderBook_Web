@@ -32,7 +32,6 @@ const BookingsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState(null);
 
-  // Load dữ liệu đặt phòng từ server
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -48,15 +47,12 @@ const BookingsManagement = () => {
     fetchBookings();
   }, []);
 
-  // Thêm đặt phòng mới
   const handleAddBooking = async () => {
     try {
       setLoading(true); // Bắt đầu loading
 
-      // Gọi API bookRoom() với thông tin từ form
       const response = await bookRoom(newBooking);
 
-      // Cập nhật state danh sách bookings sau khi thêm thành công
       setBookings([...bookings, response]);
       setNewBooking({ guestName: '', roomNumber: '', checkIn: '', checkOut: '', status: 'Pending' });
       setIsAddDialogOpen(false);
